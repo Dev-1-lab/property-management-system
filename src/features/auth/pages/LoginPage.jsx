@@ -199,7 +199,7 @@ const LoginPage = () => {
                     <div style={styles.iconWrapper}>
                         <Shield size={32} color="#6366F1" />
                     </div>
-                    <h1 style={styles.title}>Mol-mulk boshqaruv tizimi</h1>
+                    <h1 style={styles.title}>Mol-mulk xarakatini hisobga olish tizimi</h1>
                     <p style={styles.subtitle}>Tizimga kirish</p>
                 </div>
 
