@@ -380,7 +380,7 @@ const ItemsPage = () => {
     return (
         <div>
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6" style={{margin: '10px'}}>
                 <h1 className="text-3xl font-bold text-gray-800">Mol-mulk ro'yxati</h1>
                 {canEdit && (
                     <button
@@ -393,7 +393,7 @@ const ItemsPage = () => {
                 )}
             </div>
             {/* Filters */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6" style={{margin: '10px',gap: '20px'}}>
                 <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -401,7 +401,7 @@ const ItemsPage = () => {
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Qidirish..."
+                            placeholder="        Universal qidiruv..."
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         />
                     </div>
@@ -419,16 +419,16 @@ const ItemsPage = () => {
                 </div>
             </div>
             {/* Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden" style={{margin: '10px 30px '}}>
                 {loading ? (
                     <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                     </div>
                 ) : (
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
+                    <table className="w-full" style={{margin: '10px'}}>
+                        <thead className="bg-gray-200 border-b-8   border-t-8 border-gray-200 ">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 pl-8 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Nomi
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
