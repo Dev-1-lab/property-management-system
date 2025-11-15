@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Download, Eye, Edit, Check } from 'lucide-react';
+import { Plus, Search, Filter, Download, Eye, Edit, Check, X } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { USER_ROLES } from '../../../utils/constants';
 import StatusBadge from '../components/StatusBadge';
@@ -187,6 +187,7 @@ const ItemsPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [viewItem, setViewItem] = useState(null);
+    const [showFilterModal, setShowFilterModal] = useState(false);
     const [filters, setFilters] = useState({
         status: '',
         type: '',
@@ -269,18 +270,47 @@ const ItemsPage = () => {
 
     const handleExport = async () => {
         try {
-            console.log('Exporting filtered items:', items);
-            const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+            // Excel format uchun CSV export
+            const csvHeader = 'ID,Nomi,Turi,Holat,Sana,Tergovchi,Baholangan qiymat\n';
+            const csvData = items.map(item =>
+                `${item.id},${item.name},${item.type},${item.status},${item.createdAt},${item.investigator},${item.expertise?.estimatedValue || 'N/A'}`
+            ).join('\n');
+
+            const csvContent = csvHeader + csvData;
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `mol-mulk-${Date.now()}.json`);
+            link.setAttribute('download', `mol-mulk-${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             link.remove();
+            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Failed to export:', error);
+            alert('Export xatolik: ' + error.message);
         }
+    };
+
+    const handleApplyFilters = () => {
+        console.log('Applying filters:', filters);
+        setShowFilterModal(false);
+        loadItems();
+    };
+
+    const handleResetFilters = () => {
+        console.log('Resetting filters');
+        setFilters({
+            status: '',
+            type: '',
+            dateFrom: '',
+            dateTo: '',
+        });
+    };
+
+    const handleOpenFilterModal = () => {
+        console.log('Opening filter modal');
+        setShowFilterModal(true);
     };
 
     const styles = {
@@ -442,11 +472,21 @@ const ItemsPage = () => {
                     </div>
                     <button
                         style={styles.filterButton}
+                        onClick={handleOpenFilterModal}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                     >
                         <Filter size={20} />
                         <span>Filter</span>
+                        {(filters.status || filters.type || filters.dateFrom || filters.dateTo) && (
+                            <span style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                backgroundColor: '#EF4444',
+                                marginLeft: '4px',
+                            }} />
+                        )}
                     </button>
                     <button
                         onClick={handleExport}
@@ -559,6 +599,223 @@ const ItemsPage = () => {
                     item={viewItem}
                     onClose={() => setViewItem(null)}
                 />
+            )}
+
+            {/* Filter Modal */}
+            {showFilterModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '16px',
+                        zIndex: 50,
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowFilterModal(false);
+                        }
+                    }}
+                >
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        padding: '24px',
+                        width: '100%',
+                        maxWidth: '500px',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '24px',
+                        }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1F2937' }}>
+                                Filtrlar
+                            </h2>
+                            <button
+                                onClick={() => setShowFilterModal(false)}
+                                style={{
+                                    padding: '4px',
+                                    border: 'none',
+                                    background: 'none',
+                                    cursor: 'pointer',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#F3F4F6'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                            >
+                                <X size={24} color="#6B7280" />
+                            </button>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#374151',
+                                marginBottom: '8px',
+                            }}>
+                                Holati
+                            </label>
+                            <select
+                                value={filters.status}
+                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 16px',
+                                    border: '1px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    backgroundColor: 'white',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="">Barchasi</option>
+                                <option value="YARATILGAN">Yaratilgan</option>
+                                <option value="EKSPERTIZA_KIRITILGAN">Ekspertiza kiritilgan</option>
+                                <option value="SAQLASHGA_YUBORILGAN">Saqlashga yuborilgan</option>
+                                <option value="TASDIQLANGAN">Tasdiqlangan</option>
+                                <option value="MATERIALNI_SUDGA_TOPSHIRILGAN">Sudga topshirilgan</option>
+                                <option value="SUD_QARORI_KIRITILGAN">Sud qarori kiritilgan</option>
+                                <option value="TUSHGAN_MABLAG">Tushgan mablag'</option>
+                            </select>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#374151',
+                                marginBottom: '8px',
+                            }}>
+                                Turi
+                            </label>
+                            <select
+                                value={filters.type}
+                                onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 16px',
+                                    border: '1px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    backgroundColor: 'white',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="">Barchasi</option>
+                                <option value="Elektronika">Elektronika</option>
+                                <option value="Mebel">Mebel</option>
+                                <option value="TRANSPORT">Transport</option>
+                                <option value="QIMMATBAHO">Qimmatbaho</option>
+                                <option value="BOSHQA">Boshqa</option>
+                            </select>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    color: '#374151',
+                                    marginBottom: '8px',
+                                }}>
+                                    Dan
+                                </label>
+                                <input
+                                    type="date"
+                                    value={filters.dateFrom}
+                                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 16px',
+                                        border: '1px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '14px',
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    color: '#374151',
+                                    marginBottom: '8px',
+                                }}>
+                                    Gacha
+                                </label>
+                                <input
+                                    type="date"
+                                    value={filters.dateTo}
+                                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 16px',
+                                        border: '1px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '14px',
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: '12px',
+                            marginTop: '24px',
+                        }}>
+                            <button
+                                onClick={handleResetFilters}
+                                style={{
+                                    padding: '10px 16px',
+                                    border: '1px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'white',
+                                    color: '#374151',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
+                                Tozalash
+                            </button>
+                            <button
+                                onClick={handleApplyFilters}
+                                style={{
+                                    padding: '10px 16px',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#6366F1',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#4F46E5'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#6366F1'}
+                            >
+                                Qo'llash
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <style>{`
