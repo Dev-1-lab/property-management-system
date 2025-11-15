@@ -1,5 +1,6 @@
 // API endpoints
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// API endpoints
 
 export const API_ENDPOINTS = {
     AUTH: {
@@ -41,20 +42,25 @@ export const ROLE_LABELS = {
     [USER_ROLES.ADMINISTRATOR]: 'Administrator',
 };
 
-// Item statuses
+// Item statuses - To'liq jarayon bo'yicha
 export const ITEM_STATUS = {
     YARATILGAN: 'YARATILGAN',
+    EKSPERTIZA_KIRITILGAN: 'EKSPERTIZA_KIRITILGAN',
     SAQLASHGA_YUBORILGAN: 'SAQLASHGA_YUBORILGAN',
     TASDIQLANGAN: 'TASDIQLANGAN',
-    EKSPERTIZAGA_YUBORILGAN: 'EKSPERTIZAGA_YUBORILGAN',
-    BAHOLANGAN: 'BAHOLANGAN',
-    SUD_QARORI: 'SUD_QARORI',
+    MATERIALNI_SUDGA_TOPSHIRILGAN: 'MATERIALNI_SUDGA_TOPSHIRILGAN',
+    SUD_QARORI_KIRITILGAN: 'SUD_QARORI_KIRITILGAN',
+    TUSHGAN_MABLAG: 'TUSHGAN_MABLAG',
 };
 
 export const STATUS_CONFIG = {
     [ITEM_STATUS.YARATILGAN]: {
         color: 'bg-gray-100 text-gray-800',
         label: 'Yaratilgan',
+    },
+    [ITEM_STATUS.EKSPERTIZA_KIRITILGAN]: {
+        color: 'bg-purple-100 text-purple-800',
+        label: 'Ekspertiza kiritilgan',
     },
     [ITEM_STATUS.SAQLASHGA_YUBORILGAN]: {
         color: 'bg-blue-100 text-blue-800',
@@ -64,17 +70,17 @@ export const STATUS_CONFIG = {
         color: 'bg-green-100 text-green-800',
         label: 'Tasdiqlangan',
     },
-    [ITEM_STATUS.EKSPERTIZAGA_YUBORILGAN]: {
+    [ITEM_STATUS.MATERIALNI_SUDGA_TOPSHIRILGAN]: {
         color: 'bg-yellow-100 text-yellow-800',
-        label: 'Ekspertizaga yuborilgan',
+        label: 'Sudga topshirilgan',
     },
-    [ITEM_STATUS.BAHOLANGAN]: {
-        color: 'bg-purple-100 text-purple-800',
-        label: 'Baholangan',
-    },
-    [ITEM_STATUS.SUD_QARORI]: {
-        color: 'bg-red-100 text-red-800',
+    [ITEM_STATUS.SUD_QARORI_KIRITILGAN]: {
+        color: 'bg-orange-100 text-orange-800',
         label: 'Sud qarori kiritilgan',
+    },
+    [ITEM_STATUS.TUSHGAN_MABLAG]: {
+        color: 'bg-emerald-100 text-emerald-800',
+        label: 'Tushgan mablag\' kiritilgan',
     },
 };
 

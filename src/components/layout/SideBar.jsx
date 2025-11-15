@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Users, Shield, LogOut, FileText, BarChart,Wallet,ChartPie } from 'lucide-react';
+import { Home, Package, Users, Shield, LogOut, FileText, BarChart, Send, Microscope, Scale, Gavel, DollarSign,LucideWarehouse } from 'lucide-react';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { USER_ROLES } from '../../utils/constants';
 
@@ -18,43 +18,50 @@ const Sidebar = () => {
         },
         {
             id: 'items',
-            label: 'Mol-mulk',
+            label: 'Mol-mulkni olib qo\'yish',
             icon: Package,
             path: '/items',
             roles: [USER_ROLES.TERGOVCHI, USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'expertise',
-            label: 'Ekspertiza',
-            icon: FileText,
+            label: 'Ekspertizadan o\'tkazish va baholash',
+            icon: Microscope,
             path: '/expertise',
             roles: [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'storage',
-            label: 'Saqlash',
-            icon: Shield,
+            label: 'Saqlash joyi',
+            icon: LucideWarehouse,
             path: '/storage',
             roles: [USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
         },
         {
+            id: 'material',
+            label: 'Materialni sudga topshirish',
+            icon: Send,
+            path: '/material',
+            roles: [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR],
+        },
+        {
             id: 'decision',
-            label: 'Sud qarori',
-            icon: FileText,
+            label: 'Sud yoki boshqa organ qarori',
+            icon: Scale,
             path: '/decision',
             roles: [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'revenue',
             label: 'Tushgan mablag\'',
-            icon: Wallet,
+            icon: DollarSign,
             path: '/revenue',
             roles: [USER_ROLES.TERGOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'reports',
             label: 'Hisobotlar',
-            icon: ChartPie,
+            icon: BarChart,
             path: '/reports',
             roles: [USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
         },
@@ -78,13 +85,13 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="w-64 bg-indigo-800 text-white flex flex-col h-screen">
+        <div className="w-72 bg-indigo-800 text-white flex flex-col h-screen">
             {/* Header */}
             <div className="p-6 border-b border-indigo-700">
                 <div className="flex items-center space-x-3">
-                    <Shield className="w-8 h-8" />
+                    <Shield className="w-16 h-16" />
                     <div>
-                        <h1 className="text-lg font-bold">Mol-mulk tizimi</h1>
+                        <h1 className="text-lg font-bold">Mol-mulk xarakatini hisobga olish tizimi </h1>
                         <p className="text-xs text-indigo-200">{user?.role}</p>
                     </div>
                 </div>
@@ -103,7 +110,7 @@ const Sidebar = () => {
                         }`}
                     >
                         <item.icon className="w-5 h-5" />
-                        <span className="font-medium">{item.label}</span>
+                        <span className="font-normal text-sm">{item.label}</span>
                     </Link>
                 ))}
             </nav>

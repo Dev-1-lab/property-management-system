@@ -12,6 +12,7 @@ import RevenuePage from '../features/revenue/pages/RevenuePage';
 import ReportsPage from '../pages/ReportsPage';
 import AdminPage from '../features/admin/pages/AdminPage';
 import { USER_ROLES } from '../utils/constants';
+import MaterialSubmissionPage from "../features/material/pages/MaterialSubmissionPage.jsx";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -69,7 +70,7 @@ const AppRoutes = () => {
                 <Route
                     path="storage"
                     element={
-                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATORs]}>
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
                             <StoragePage />
                         </ProtectedRoute>
                     }
@@ -101,6 +102,15 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="material"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.ADMINISTRATOR,USER_ROLES.TERGOVCHI]}>
+                            <MaterialSubmissionPage />
+                        </ProtectedRoute>
+                    }
+                />
+
 
                 <Route
                     path="users"
