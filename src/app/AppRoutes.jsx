@@ -5,8 +5,10 @@ import LoginPage from '../features/auth/pages/LoginPage';
 import MainLayout from '../components/layout/MainLayout';
 import DashboardPage from '../pages/DashboardPage';
 import ItemsPage from '../features/items/pages/ItemsPage';
-import StoragePage from '../features/storage/pages/StoragePage';
 import ExpertisePage from '../features/expertise/pages/ExpertisePage';
+import StoragePage from '../features/storage/pages/StoragePage';
+import DecisionPage from '../features/decision/pages/DecisionPage';
+import RevenuePage from '../features/revenue/pages/RevenuePage';
 import ReportsPage from '../pages/ReportsPage';
 import AdminPage from '../features/admin/pages/AdminPage';
 import { USER_ROLES } from '../utils/constants';
@@ -56,19 +58,37 @@ const AppRoutes = () => {
                 <Route path="items" element={<ItemsPage />} />
 
                 <Route
+                    path="expertise"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
+                            <ExpertisePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
                     path="storage"
                     element={
-                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATORs]}>
                             <StoragePage />
                         </ProtectedRoute>
                     }
                 />
 
                 <Route
-                    path="expertise"
+                    path="decision"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
+                            <DecisionPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="revenue"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
-                            <ExpertisePage />
+                            <RevenuePage />
                         </ProtectedRoute>
                     }
                 />

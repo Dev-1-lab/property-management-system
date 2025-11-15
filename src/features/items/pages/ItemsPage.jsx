@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { USER_ROLES } from '../../../utils/constants';
 import StatusBadge from '../components/StatusBadge';
 import ItemModal from '../components/ItemModal';
+import ViewItemModal from "../components/ViewItemModal.jsx";
 
 // Mock data
 const mockItems = [
@@ -64,6 +65,7 @@ const ItemsPage = () => {
     const { user } = useAuth();
     const canEdit = [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR].includes(user?.role);
     const canConfirm = user?.role === USER_ROLES.TASDIQLOVCHI;
+    const [viewItem, setViewItem] = useState(null);
 
     useEffect(() => {
         loadItems();
@@ -247,9 +249,13 @@ const ItemsPage = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center space-x-2">
-                                            <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                                            <button
+                                                onClick={() => setViewItem(item)}
+                                                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                            >
                                                 <Eye className="w-4 h-4 text-gray-600" />
                                             </button>
+
                                             {canEdit && (
                                                 <button
                                                     onClick={() => handleEdit(item)}
@@ -280,6 +286,13 @@ const ItemsPage = () => {
                     onSave={handleSave}
                 />
             )}
+            {viewItem && (
+                <ViewItemModal
+                    item={viewItem}
+                    onClose={() => setViewItem(null)}
+                />
+            )}
+
         </div>
     );
 };
