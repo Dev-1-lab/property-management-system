@@ -66,11 +66,11 @@ const Sidebar = () => {
     return (
         <div className="w-64 bg-indigo-900 text-white h-screen flex flex-col justify-between shadow-lg">
             {/* Header */}
-            <div className="p-8 border-b border-indigo-800">
+            <div className="p-4 border-b border-indigo-800">
                 <div className="flex items-center space-x-6">
                     <Shield className="w-12 h-12 text-indigo-300" />
                     <div>
-                        <h1 className="text-2xl font-semibold">Mol-mulk tizimi</h1>
+                        <h1 className="text-xl font-semibold">FinControl</h1>
                         <p className="text-sm text-indigo-400">{user?.role}</p>
                     </div>
                 </div>
@@ -88,15 +88,19 @@ const Sidebar = () => {
                                 : 'text-indigo-200 hover:bg-indigo-600 hover:text-white'
                         }`}
                     >
-                        <item.icon className="w-8 h-8" />
+                        <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
                     </Link>
                 ))}
             </nav>
 
             {/* User Info & Logout */}
-            {/* User Info & Logout */}
-            <div className="p-8 border-t border-indigo-800 bg-indigo-950">
+            <div className="p-4 border-t border-indigo-800 bg-indigo-950">
+
+                <div className="mb-2">
+                    <p className="text-lg font-medium text-indigo-100">{user?.name}</p>
+                    <p className="text-base text-indigo-400">{user?.email}</p>
+                </div>
                 <button
                     onClick={handleLogout}
                     className="flex items-center space-x-4 w-full px-6 py-3.5 rounded-lg bg-indigo-800 hover:bg-indigo-700 transition-colors text-lg text-indigo-200 hover:text-white"
@@ -104,10 +108,6 @@ const Sidebar = () => {
                     <LogOut className="w-7 h-7" />
                     <span>Chiqish</span>
                 </button>
-                <div className="mb-8">
-                    <p className="text-lg font-medium text-indigo-100">{user?.name}</p>
-                    <p className="text-base text-indigo-400">{user?.email}</p>
-                </div>
 
             </div>
         </div>

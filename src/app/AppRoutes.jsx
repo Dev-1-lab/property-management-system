@@ -5,6 +5,9 @@ import LoginPage from '../features/auth/pages/LoginPage';
 import MainLayout from '../components/layout/MainLayout';
 import DashboardPage from '../pages/DashboardPage';
 import ItemsPage from '../features/items/pages/ItemsPage';
+import StoragePage from '../features/storage/pages/StoragePage';
+import ExpertisePage from '../features/expertise/pages/ExpertisePage';
+import ReportsPage from '../pages/ReportsPage';
 import AdminPage from '../features/admin/pages/AdminPage';
 import { USER_ROLES } from '../utils/constants';
 
@@ -53,6 +56,33 @@ const AppRoutes = () => {
                 <Route path="items" element={<ItemsPage />} />
 
                 <Route
+                    path="storage"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                            <StoragePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="expertise"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                            <ExpertisePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="reports"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                            <ReportsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
                     path="users"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.ADMINISTRATOR]}>
@@ -61,12 +91,7 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Add more routes here as needed */}
-                {/*
-        <Route path="storage" element={<StoragePage />} />
-        <Route path="expertise" element={<ExpertisePage />} />
-        <Route path="reports" element={<ReportsPage />} />
-        */}
+
             </Route>
 
             {/* 404 Not Found */}

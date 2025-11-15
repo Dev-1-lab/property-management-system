@@ -128,7 +128,6 @@ const DashboardPage = () => {
         <div className="px-4 sm:px-6 lg:px-8">
             <h1
                 className="text-3xl font-bold text-gray-800 mb-6"
-                style={{ marginLeft: '25px', marginTop: '20px' }}
             >
                 Bosh sahifa
             </h1>
@@ -136,29 +135,22 @@ const DashboardPage = () => {
             {/* Statistics Cards */}
             <div
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-14"
-                style={{ marinLeft: '25px', marginRight: '20px' }}
             >
                 {statCards.map((stat, idx) => (
                     <div
                         key={idx}
                         className="bg-white rounded-2xl shadow-lg p-8 min-h-[160px] flex flex-col justify-between"
-                        style={{
-                            marginLeft: '25px',
-                            marginTop: '20px',
-                            marginRight: '20px',
-                        }}
+
                     >
                         <div className="flex items-center justify-between">
                             <div
                                 className={`${stat.color} p-4 rounded-xl`}
-                                style={{ marginLeft: '20px', marginTop: '20px' }}
                             >
                                 <stat.icon className="w-8 h-8 text-white" />
                             </div>
 
                             <div
                                 className="flex items-center space-x-1"
-                                style={{ marginRight: '20px', marginTop: '20px' }}
                             >
                                 <TrendingUp className="w-5 h-5 text-green-500" />
                                 <span className="text-sm font-semibold text-green-600">
@@ -169,7 +161,6 @@ const DashboardPage = () => {
 
                         <div
                             className="mt-4"
-                            style={{ marginLeft: '20px', marginBottom: '20px' }}
                         >
                             <p className="text-gray-600 text-sm">{stat.label}</p>
                             <p className="text-4xl font-bold text-gray-900 mt-1">
@@ -183,25 +174,22 @@ const DashboardPage = () => {
             {/* Recent Items */}
             <div
                 className="bg-white rounded-lg shadow-md p-6 mt-10"
-                style={{ margin: '30px'}}
             >
                 <div className="flex items-center justify-between mb-6">
                     <h2
                         className="text-xl font-bold text-gray-800"
-                        style={{ marginLeft: '30px', marginTop: '20px' }}
                     >
                         So'nggi faoliyat
                     </h2>
                     <a
                         href="/items"
                         className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                        style={{ marginRight: '20px', marginTop: '20px' }}
                     >
                         Barchasini ko'rish →
                     </a>
                 </div>
 
-                <div className="space-y-3" style={{ margin:'20px' }}>
+                <div className="space-y-3" >
                     {recentItems.length === 0 ? (
                         <p className="text-center text-gray-500 py-8">
                             Hozircha faoliyat yo'q
@@ -211,7 +199,6 @@ const DashboardPage = () => {
                             <div
                                 key={item.id}
                                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                style={{ margin:'10px' }}
                             >
                                 <div className="flex items-center space-x-4">
                                     <div className="bg-indigo-100 p-2 rounded-lg">
