@@ -5,6 +5,8 @@ import { USER_ROLES } from '../../../utils/constants';
 import StatusBadge from '../components/StatusBadge';
 import ItemModal from '../components/ItemModal';
 import ItemViewModal from '../components/ItemViewModal';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 // Full detailed mock data (compatible with ViewItemModal)
 const mockItems = [
@@ -182,12 +184,15 @@ const mockItems = [
 
 const ItemsPage = () => {
     const [items, setItems] = useState([]);
+    const [allItems, setAllItems] = useState([]); // Barcha itemlar
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [viewItem, setViewItem] = useState(null);
     const [showFilterModal, setShowFilterModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [filters, setFilters] = useState({
         status: '',
         type: '',
@@ -196,12 +201,13 @@ const ItemsPage = () => {
     });
 
     const { user } = useAuth();
+    const { showSuccess, showError, showWarning, showInfo } = useToast();
     const canEdit = [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR].includes(user?.role);
     const canConfirm = user?.role === USER_ROLES.TASDIQLOVCHI;
 
     useEffect(() => {
         loadItems();
-    }, [filters, searchTerm]);
+    }, [filters, searchTerm, currentPage, itemsPerPage]);
 
     const loadItems = async () => {
         try {
@@ -231,9 +237,17 @@ const ItemsPage = () => {
                 filteredItems = filteredItems.filter((item) => item.createdAt <= filters.dateTo);
             }
 
-            setItems(filteredItems);
+            setAllItems(filteredItems);
+
+            // Pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+            setItems(paginatedItems);
         } catch (error) {
             console.error('Failed to load items:', error);
+            showError('Ma\'lumotlarni yuklashda xatolik yuz berdi');
         } finally {
             setLoading(false);
         }
@@ -247,7 +261,7 @@ const ItemsPage = () => {
     const handleEdit = (item) => {
         // Check if item can be edited
         if (item.status === 'TASDIQLANGAN' || item.status === 'TUSHGAN_MABLAG') {
-            alert('Bu mol-mulkni tahrirlash mumkin emas. Tasdiqlovchi tasdiqlagan yoki jarayon yakunlangan.');
+            showWarning('Bu mol-mulkni tahrirlash mumkin emas. Tasdiqlovchi tasdiqlagan yoki jarayon yakunlangan.', 4000);
             return;
         }
         setSelectedItem(item);
@@ -258,21 +272,23 @@ const ItemsPage = () => {
         try {
             if (selectedItem) {
                 console.log('Updating item:', selectedItem.id, data);
+                showSuccess('Mol-mulk muvaffaqiyatli yangilandi');
             } else {
                 console.log('Creating new item:', data);
+                showSuccess('Yangi mol-mulk qo\'shildi');
             }
             setShowModal(false);
             loadItems();
         } catch (error) {
             console.error('Failed to save item:', error);
+            showError('Saqlashda xatolik yuz berdi');
         }
     };
 
     const handleExport = async () => {
         try {
-            // Excel format uchun CSV export
             const csvHeader = 'ID,Nomi,Turi,Holat,Sana,Tergovchi,Baholangan qiymat\n';
-            const csvData = items.map(item =>
+            const csvData = allItems.map(item =>
                 `${item.id},${item.name},${item.type},${item.status},${item.createdAt},${item.investigator},${item.expertise?.estimatedValue || 'N/A'}`
             ).join('\n');
 
@@ -286,15 +302,19 @@ const ItemsPage = () => {
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
+
+            showSuccess('Ma\'lumotlar muvaffaqiyatli eksport qilindi');
         } catch (error) {
             console.error('Failed to export:', error);
-            alert('Export xatolik: ' + error.message);
+            showError('Eksport qilishda xatolik yuz berdi');
         }
     };
 
     const handleApplyFilters = () => {
         console.log('Applying filters:', filters);
+        setCurrentPage(1); // Reset to first page
         setShowFilterModal(false);
+        showInfo('Filtrlar qo\'llandi');
         loadItems();
     };
 
@@ -306,6 +326,8 @@ const ItemsPage = () => {
             dateFrom: '',
             dateTo: '',
         });
+        setCurrentPage(1);
+        showInfo('Filtrlar tozalandi');
     };
 
     const handleOpenFilterModal = () => {
@@ -582,6 +604,21 @@ const ItemsPage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && items.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allItems.length / itemsPerPage)}
+                        totalItems={allItems.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Eye, Edit, Save } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import StatusBadge from '../../items/components/StatusBadge';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 // Mock data - faqat YARATILGAN va EKSPERTIZA_KIRITILGAN statusdagi itemlar
 const mockItems = [
@@ -42,9 +44,12 @@ const mockItems = [
 
 const ExpertisePage = () => {
     const [items, setItems] = useState([]);
+    const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [expertiseForm, setExpertiseForm] = useState({
         date: new Date().toISOString().split('T')[0],
         organization: '',
@@ -53,20 +58,28 @@ const ExpertisePage = () => {
         notes: '',
     });
     const { user } = useAuth();
+    const { showSuccess, showError } = useToast();
 
     useEffect(() => {
         loadItems();
-    }, []);
+    }, [currentPage, itemsPerPage]);
 
     const loadItems = async () => {
         try {
             setLoading(true);
             setTimeout(() => {
-                setItems(mockItems);
+                setAllItems(mockItems);
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedItems = mockItems.slice(startIndex, endIndex);
+
+                setItems(paginatedItems);
                 setLoading(false);
             }, 500);
         } catch (error) {
             console.error('Failed to load items:', error);
+            showError('Ma\'lumotlarni yuklashda xatolik');
             setLoading(false);
         }
     };
@@ -97,7 +110,7 @@ const ExpertisePage = () => {
         console.log('Saving expertise for item:', selectedItem.id, expertiseForm);
 
         // Update item status
-        const updatedItems = items.map(item => {
+        const updatedItems = allItems.map(item => {
             if (item.id === selectedItem.id) {
                 return {
                     ...item,
@@ -108,29 +121,42 @@ const ExpertisePage = () => {
             return item;
         });
 
-        setItems(updatedItems);
+        setAllItems(updatedItems);
+
+        // Update paginated items
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setItems(updatedItems.slice(startIndex, endIndex));
+
         setShowModal(false);
         setSelectedItem(null);
+        showSuccess('Ekspertiza natijalari saqlandi');
     };
 
     const handleSendToStorage = async (item) => {
         if (!item.expertise) {
-            alert('Avval ekspertiza natijasini kiriting!');
+            showError('Avval ekspertiza natijasini kiriting!');
             return;
         }
 
         console.log('Sending to storage:', item.id);
 
         // Update status to SAQLASHGA_YUBORILGAN
-        const updatedItems = items.map(i => {
+        const updatedItems = allItems.map(i => {
             if (i.id === item.id) {
                 return { ...i, status: 'SAQLASHGA_YUBORILGAN' };
             }
             return i;
         });
 
-        setItems(updatedItems);
-        alert('Mol-mulk saqlash joyiga yuborildi!');
+        setAllItems(updatedItems);
+
+        // Update paginated items
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setItems(updatedItems.slice(startIndex, endIndex));
+
+        showSuccess('Mol-mulk saqlash joyiga yuborildi');
     };
 
     const styles = {
@@ -272,6 +298,21 @@ const ExpertisePage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && items.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allItems.length / itemsPerPage)}
+                        totalItems={allItems.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 

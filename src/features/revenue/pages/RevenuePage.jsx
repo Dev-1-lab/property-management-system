@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { DollarSign, Plus, Edit, CheckCircle, Calendar } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import StatusBadge from '../../items/components/StatusBadge';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 // Mock data - faqat SUD_QARORI_KIRITILGAN statusdagi itemlar
 const mockItems = [
@@ -49,9 +51,12 @@ const mockItems = [
 
 const RevenuePage = () => {
     const [items, setItems] = useState([]);
+    const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [revenueForm, setRevenueForm] = useState({
         amount: '',
         date: new Date().toISOString().split('T')[0],
@@ -60,20 +65,28 @@ const RevenuePage = () => {
         notes: '',
     });
     const { user } = useAuth();
+    const { showSuccess, showError } = useToast();
 
     useEffect(() => {
         loadItems();
-    }, []);
+    }, [currentPage, itemsPerPage]);
 
     const loadItems = async () => {
         try {
             setLoading(true);
             setTimeout(() => {
-                setItems(mockItems);
+                setAllItems(mockItems);
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedItems = mockItems.slice(startIndex, endIndex);
+
+                setItems(paginatedItems);
                 setLoading(false);
             }, 500);
         } catch (error) {
             console.error('Failed to load items:', error);
+            showError('Ma\'lumotlarni yuklashda xatolik');
             setLoading(false);
         }
     };
@@ -97,7 +110,7 @@ const RevenuePage = () => {
     const handleSave = async () => {
         console.log('Saving revenue for item:', selectedItem.id, revenueForm);
 
-        const updatedItems = items.map(item => {
+        const updatedItems = allItems.map(item => {
             if (item.id === selectedItem.id) {
                 return {
                     ...item,
@@ -108,12 +121,18 @@ const RevenuePage = () => {
             return item;
         });
 
-        setItems(updatedItems);
+        setAllItems(updatedItems);
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setItems(updatedItems.slice(startIndex, endIndex));
+
         setShowModal(false);
         setSelectedItem(null);
+        showSuccess('Tushgan mablag\' muvaffaqiyatli saqlandi');
     };
 
-    const totalRevenue = items
+    const totalRevenue = allItems
         .filter(i => i.revenue)
         .reduce((sum, i) => sum + parseFloat(i.revenue.amount.replace(/,/g, '')), 0);
 
@@ -164,13 +183,13 @@ const RevenuePage = () => {
                 <div style={styles.statCard}>
                     <p style={styles.statLabel}>Kiritilgan</p>
                     <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1F2937' }}>
-                        {items.filter(i => i.revenue).length}
+                        {allItems.filter(i => i.revenue).length}
                     </p>
                 </div>
                 <div style={styles.statCard}>
                     <p style={styles.statLabel}>Kutilmoqda</p>
                     <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#F59E0B' }}>
-                        {items.filter(i => !i.revenue).length}
+                        {allItems.filter(i => !i.revenue).length}
                     </p>
                 </div>
             </div>
@@ -254,6 +273,21 @@ const RevenuePage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && items.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allItems.length / itemsPerPage)}
+                        totalItems={allItems.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Package, Check, X, Upload, Eye, Clock } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import StatusBadge from '../../items/components/StatusBadge';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 // Mock data - saqlashga yuborilgan mol-mulklar
 const mockPendingItems = [
@@ -39,27 +41,37 @@ const mockPendingItems = [
 
 const StoragePage = () => {
     const [items, setItems] = useState([]);
+    const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmNote, setConfirmNote] = useState('');
     const [confirmFile, setConfirmFile] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const { user } = useAuth();
+    const { showSuccess, showError } = useToast();
 
     useEffect(() => {
         loadPendingItems();
-    }, []);
+    }, [currentPage, itemsPerPage]);
 
     const loadPendingItems = async () => {
         try {
             setLoading(true);
-            // Mock API call
             setTimeout(() => {
-                setItems(mockPendingItems);
+                setAllItems(mockPendingItems);
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedItems = mockPendingItems.slice(startIndex, endIndex);
+
+                setItems(paginatedItems);
                 setLoading(false);
             }, 500);
         } catch (error) {
             console.error('Failed to load items:', error);
+            showError('Ma\'lumotlarni yuklashda xatolik');
             setLoading(false);
         }
     };
@@ -77,13 +89,23 @@ const StoragePage = () => {
             });
 
             // Remove confirmed item from list
-            setItems(items.filter(item => item.id !== selectedItem.id));
+            const updatedItems = allItems.filter(item => item.id !== selectedItem.id);
+            setAllItems(updatedItems);
+
+            // Update paginated items
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            setItems(updatedItems.slice(startIndex, endIndex));
+
             setShowConfirmModal(false);
             setSelectedItem(null);
             setConfirmNote('');
             setConfirmFile(null);
+
+            showSuccess('Mol-mulk muvaffaqiyatli tasdiqlandi');
         } catch (error) {
             console.error('Failed to confirm:', error);
+            showError('Tasdiqlashda xatolik yuz berdi');
         }
     };
 
@@ -360,6 +382,21 @@ const StoragePage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && items.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allItems.length / itemsPerPage)}
+                        totalItems={allItems.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 

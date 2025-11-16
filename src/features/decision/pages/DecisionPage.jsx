@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Gavel, Plus, Edit, Upload, Eye } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import StatusBadge from '../../items/components/StatusBadge';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 // Mock data - faqat TASDIQLANGAN statusdagi itemlar
 const mockItems = [
@@ -43,9 +45,12 @@ const mockItems = [
 
 const DecisionPage = () => {
     const [items, setItems] = useState([]);
+    const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [decisionForm, setDecisionForm] = useState({
         type: 'SUD',
         number: '',
@@ -56,20 +61,28 @@ const DecisionPage = () => {
     });
     const [file, setFile] = useState(null);
     const { user } = useAuth();
+    const { showSuccess, showError } = useToast();
 
     useEffect(() => {
         loadItems();
-    }, []);
+    }, [currentPage, itemsPerPage]);
 
     const loadItems = async () => {
         try {
             setLoading(true);
             setTimeout(() => {
-                setItems(mockItems);
+                setAllItems(mockItems);
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedItems = mockItems.slice(startIndex, endIndex);
+
+                setItems(paginatedItems);
                 setLoading(false);
             }, 500);
         } catch (error) {
             console.error('Failed to load items:', error);
+            showError('Ma\'lumotlarni yuklashda xatolik');
             setLoading(false);
         }
     };
@@ -94,7 +107,7 @@ const DecisionPage = () => {
     const handleSave = async () => {
         console.log('Saving decision for item:', selectedItem.id, decisionForm, file);
 
-        const updatedItems = items.map(item => {
+        const updatedItems = allItems.map(item => {
             if (item.id === selectedItem.id) {
                 return {
                     ...item,
@@ -105,10 +118,16 @@ const DecisionPage = () => {
             return item;
         });
 
-        setItems(updatedItems);
+        setAllItems(updatedItems);
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setItems(updatedItems.slice(startIndex, endIndex));
+
         setShowModal(false);
         setSelectedItem(null);
         setFile(null);
+        showSuccess('Sud qarori muvaffaqiyatli saqlandi');
     };
 
     const styles = {
@@ -223,6 +242,21 @@ const DecisionPage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && items.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allItems.length / itemsPerPage)}
+                        totalItems={allItems.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 

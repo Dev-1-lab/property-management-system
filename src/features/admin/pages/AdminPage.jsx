@@ -3,23 +3,34 @@ import { Plus, Edit, X, Shield, Lock } from 'lucide-react';
 import { usersAPI } from '../../../utils/api';
 import { USER_ROLES, ROLE_LABELS } from '../../../utils/constants';
 import UserModal from '../components/UserModal';
+import Pagination from '../../../components/ui/Pagination';
+import { useToast } from '../../../components/ui/Toast';
 
 const AdminPage = () => {
     const [users, setUsers] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const { showSuccess, showError, showWarning } = useToast();
 
     useEffect(() => {
         loadUsers();
-    }, []);
+    }, [currentPage, itemsPerPage]);
 
     const loadUsers = async () => {
         try {
             const response = await usersAPI.getAll();
-            setUsers(response.data.users);
+            setAllUsers(response.data.users);
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            setUsers(response.data.users.slice(startIndex, endIndex));
         } catch (error) {
             console.error('Failed to load users:', error);
+            showError('Foydalanuvchilarni yuklashda xatolik');
         } finally {
             setLoading(false);
         }
@@ -39,13 +50,16 @@ const AdminPage = () => {
         try {
             if (selectedUser) {
                 await usersAPI.update(selectedUser.id, data);
+                showSuccess('Foydalanuvchi muvaffaqiyatli yangilandi');
             } else {
                 await usersAPI.create(data);
+                showSuccess('Yangi foydalanuvchi qo\'shildi');
             }
             setShowModal(false);
             loadUsers();
         } catch (error) {
             console.error('Failed to save user:', error);
+            showError('Saqlashda xatolik yuz berdi');
         }
     };
 
@@ -53,9 +67,11 @@ const AdminPage = () => {
         try {
             const newStatus = user.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
             await usersAPI.updateStatus(user.id, newStatus);
+            showSuccess(`Foydalanuvchi ${newStatus === 'ACTIVE' ? 'aktivlashtirildi' : 'bloklandi'}`);
             loadUsers();
         } catch (error) {
             console.error('Failed to toggle user status:', error);
+            showError('Status o\'zgartirishda xatolik');
         }
     };
 
@@ -67,6 +83,13 @@ const AdminPage = () => {
             [USER_ROLES.MONITORING]: 'bg-purple-100 text-purple-800',
         };
         return colors[role] || 'bg-gray-100 text-gray-800';
+    };
+
+    const stats = {
+        [USER_ROLES.TERGOVCHI]: allUsers.filter(u => u.role === USER_ROLES.TERGOVCHI).length,
+        [USER_ROLES.TASDIQLOVCHI]: allUsers.filter(u => u.role === USER_ROLES.TASDIQLOVCHI).length,
+        [USER_ROLES.MONITORING]: allUsers.filter(u => u.role === USER_ROLES.MONITORING).length,
+        [USER_ROLES.ADMINISTRATOR]: allUsers.filter(u => u.role === USER_ROLES.ADMINISTRATOR).length,
     };
 
     return (
@@ -89,13 +112,12 @@ const AdminPage = () => {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 {Object.entries(USER_ROLES).map(([key, role]) => {
-                    const count = users.filter(u => u.role === role).length;
                     return (
                         <div key={key} className="bg-white rounded-lg shadow-md p-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-gray-600 text-sm">{ROLE_LABELS[role]}</p>
-                                    <p className="text-2xl font-bold text-gray-800 mt-1">{count}</p>
+                                    <p className="text-2xl font-bold text-gray-800 mt-1">{stats[role]}</p>
                                 </div>
                                 <Shield className="w-8 h-8 text-indigo-600" />
                             </div>
@@ -200,6 +222,21 @@ const AdminPage = () => {
                         )}
                         </tbody>
                     </table>
+                )}
+
+                {/* Pagination */}
+                {!loading && users.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(allUsers.length / itemsPerPage)}
+                        totalItems={allUsers.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        onItemsPerPageChange={(perPage) => {
+                            setItemsPerPage(perPage);
+                            setCurrentPage(1);
+                        }}
+                    />
                 )}
             </div>
 
