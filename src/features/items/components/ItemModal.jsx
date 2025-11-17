@@ -4,11 +4,15 @@ import { ITEM_TYPES, STORAGE_LOCATIONS } from '../../../utils/constants';
 
 const ItemModal = ({ item, onClose, onSave }) => {
     const [formData, setFormData] = useState({
+        caseNumber: '',
+        caseName: '',
+        seizureProtocol: '',
         name: '',
         type: ITEM_TYPES.TRANSPORT,
+        unit: 'dona',
+        quantity: 1,
         description: '',
         location: '1-ombor',
-        quantity: 1,
     });
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -16,11 +20,15 @@ const ItemModal = ({ item, onClose, onSave }) => {
     useEffect(() => {
         if (item) {
             setFormData({
+                caseNumber: item.caseNumber || '',
+                caseName: item.caseName || '',
+                seizureProtocol: item.seizureProtocol || '',
                 name: item.name || '',
                 type: item.type || ITEM_TYPES.TRANSPORT,
+                unit: item.unit || 'dona',
+                quantity: item.quantity || 1,
                 description: item.description || '',
                 location: item.location || '1-ombor',
-                quantity: item.quantity || 1,
             });
         }
     }, [item]);
@@ -54,7 +62,7 @@ const ItemModal = ({ item, onClose, onSave }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-transparent flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -72,6 +80,54 @@ const ItemModal = ({ item, onClose, onSave }) => {
                 {/* Body */}
                 <div onSubmit={handleSubmit}>
                     <div className="space-y-4">
+                        {/* Case Number and Name */}
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Ish yuritish raqami *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="caseNumber"
+                                    value={formData.caseNumber}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    placeholder="Masalan: JY-2025/123"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Ish yuritish nomi *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="caseName"
+                                    value={formData.caseName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    placeholder="Masalan: Korrupsiya ishi - Toshkent"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Olib qo'yish dalolatnomasining raqami *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seizureProtocol"
+                                    value={formData.seizureProtocol}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    placeholder="Masalan: OQD-45/2025"
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         {/* Name */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -127,19 +183,41 @@ const ItemModal = ({ item, onClose, onSave }) => {
                             </div>
                         </div>
 
-                        {/* Quantity */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Miqdori
-                            </label>
-                            <input
-                                type="number"
-                                name="quantity"
-                                value={formData.quantity}
-                                onChange={handleChange}
-                                min="1"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
+                        {/* Unit and Quantity */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    O'lchov birligi *
+                                </label>
+                                <select
+                                    name="unit"
+                                    value={formData.unit}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                >
+                                    <option value="dona">dona</option>
+                                    <option value="kg">kg</option>
+                                    <option value="litr">litr</option>
+                                    <option value="metr">metr</option>
+                                    <option value="m²">m²</option>
+                                    <option value="to'plam">to'plam</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Soni *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    value={formData.quantity}
+                                    onChange={handleChange}
+                                    min="1"
+                                    step="0.01"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                            </div>
                         </div>
 
                         {/* Description */}

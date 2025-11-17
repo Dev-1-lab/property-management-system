@@ -34,7 +34,7 @@ const Sidebar = () => {
             label: 'Saqlash joyi',
             icon: LucideWarehouse,
             path: '/storage',
-            roles: [USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
+            roles: [USER_ROLES.TASDIQLOVCHI, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'material',
@@ -55,7 +55,7 @@ const Sidebar = () => {
             label: 'Tushgan mablag\'',
             icon: DollarSign,
             path: '/revenue',
-            roles: [USER_ROLES.TERGOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR],
+            roles: [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR],
         },
         {
             id: 'reports',

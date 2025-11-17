@@ -70,7 +70,7 @@ const AppRoutes = () => {
                 <Route
                     path="storage"
                     element={
-                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.ADMINISTRATOR]}>
                             <StoragePage />
                         </ProtectedRoute>
                     }
@@ -88,7 +88,7 @@ const AppRoutes = () => {
                 <Route
                     path="revenue"
                     element={
-                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
                             <RevenuePage />
                         </ProtectedRoute>
                     }

@@ -150,7 +150,7 @@ const ItemViewModal = ({ item, onClose }) => {
             <div style={styles.modalContent}>
                 {/* Header */}
                 <div style={styles.header}>
-                    <h2 style={styles.headerTitle}>Mol-mulk  harakati ma'lumotlari</h2>
+                    <h2 style={styles.headerTitle}>Mol-mulk ma'lumotlari</h2>
                     <div style={styles.headerButtons}>
                         <button
                             onClick={handleExportPDF}
@@ -183,12 +183,28 @@ const ItemViewModal = ({ item, onClose }) => {
                         </h3>
                         <div style={styles.grid}>
                             <div style={styles.field}>
+                                <div style={styles.label}>Ish yuritish raqami</div>
+                                <div style={styles.value}>{item.caseNumber}</div>
+                            </div>
+                            <div style={styles.field}>
+                                <div style={styles.label}>Ish yuritish nomi</div>
+                                <div style={styles.value}>{item.caseName}</div>
+                            </div>
+                            <div style={styles.field}>
+                                <div style={styles.label}>Dalolatnoma raqami</div>
+                                <div style={styles.value}>{item.seizureProtocol}</div>
+                            </div>
+                            <div style={styles.field}>
                                 <div style={styles.label}>Nomi</div>
                                 <div style={styles.value}>{item.name}</div>
                             </div>
                             <div style={styles.field}>
                                 <div style={styles.label}>Turi</div>
                                 <div style={styles.value}>{item.type}</div>
+                            </div>
+                            <div style={styles.field}>
+                                <div style={styles.label}>Soni</div>
+                                <div style={styles.value}>{item.quantity} {item.unit}</div>
                             </div>
                             <div style={styles.field}>
                                 <div style={styles.label}>Holati</div>
@@ -386,7 +402,10 @@ const ItemViewModal = ({ item, onClose }) => {
                                 <div style={styles.timelineDot}></div>
                                 <div style={styles.timelineDate}>{item.createdAt}</div>
                                 <div style={styles.timelineTitle}>Mol-mulk yaratildi</div>
-                                <div style={styles.timelineDesc}>Tergovchi: {item.investigator}</div>
+                                <div style={styles.timelineDesc}>
+                                    Ish: {item.caseNumber} • Tergovchi: {item.investigator}
+                                    <br/>Dalolatnoma: {item.seizureProtocol}
+                                </div>
                             </div>
 
                             {item.expertise && (

@@ -13,7 +13,12 @@ const mockItems = [
     {
         id: 1,
         name: 'Noutbuk Lenovo ThinkPad X1',
+        caseNumber: 'JY-2025/123',
+        caseName: 'Korrupsiya ishi - Toshkent shahar hokimligi',
+        seizureProtocol: 'OQD-45/2025',
         type: 'Elektronika',
+        unit: 'dona',
+        quantity: 1,
         status: 'TUSHGAN_MABLAG',
         createdAt: '2025-11-01',
         investigator: 'Aliyev Jasur',
@@ -103,7 +108,12 @@ const mockItems = [
     {
         id: 2,
         name: 'Proyektor Epson X500',
+        caseNumber: 'JY-2025/087',
+        caseName: 'Davlat mulkini o\'zlashtirish',
+        seizureProtocol: 'OQD-83/2025',
         type: 'Elektronika',
+        unit: 'dona',
+        quantity: 1,
         status: 'TASDIQLANGAN',
         createdAt: '2025-10-21',
         investigator: 'Karimova Nigora',
@@ -167,7 +177,12 @@ const mockItems = [
     {
         id: 3,
         name: 'Ofis kreslosi',
+        caseNumber: 'JY-2025/156',
+        caseName: 'Firibgarlik - Olmazor tumani',
+        seizureProtocol: 'OQD-12/2025',
         type: 'Mebel',
+        unit: 'dona',
+        quantity: 5,
         status: 'YARATILGAN',
         createdAt: '2025-11-04',
         investigator: 'Sodiqov Botir',
@@ -196,6 +211,7 @@ const ItemsPage = () => {
     const [filters, setFilters] = useState({
         status: '',
         type: '',
+        caseNumber: '',
         dateFrom: '',
         dateTo: '',
     });
@@ -219,7 +235,10 @@ const ItemsPage = () => {
                 filteredItems = filteredItems.filter((item) =>
                     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     item.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.investigator.toLowerCase().includes(searchTerm.toLowerCase())
+                    item.investigator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    item.caseNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    item.caseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    item.seizureProtocol?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
             }
 
@@ -229,6 +248,11 @@ const ItemsPage = () => {
             }
             if (filters.type) {
                 filteredItems = filteredItems.filter((item) => item.type === filters.type);
+            }
+            if (filters.caseNumber) {
+                filteredItems = filteredItems.filter((item) =>
+                    item.caseNumber?.toLowerCase().includes(filters.caseNumber.toLowerCase())
+                );
             }
             if (filters.dateFrom) {
                 filteredItems = filteredItems.filter((item) => item.createdAt >= filters.dateFrom);
@@ -323,6 +347,7 @@ const ItemsPage = () => {
         setFilters({
             status: '',
             type: '',
+            caseNumber: '',
             dateFrom: '',
             dateTo: '',
         });
@@ -500,7 +525,7 @@ const ItemsPage = () => {
                     >
                         <Filter size={20} />
                         <span>Filter</span>
-                        {(filters.status || filters.type || filters.dateFrom || filters.dateTo) && (
+                        {(filters.status || filters.type || filters.caseNumber || filters.dateFrom || filters.dateTo) && (
                             <span style={{
                                 width: '8px',
                                 height: '8px',
@@ -532,8 +557,9 @@ const ItemsPage = () => {
                     <table style={styles.table}>
                         <thead style={styles.thead}>
                         <tr>
+                            <th style={styles.th}>Ish yuritish raqami</th>
                             <th style={styles.th}>Nomi</th>
-                            <th style={styles.th}>Turi</th>
+                            <th style={styles.th}>Soni</th>
                             <th style={styles.th}>Holati</th>
                             <th style={styles.th}>Sana</th>
                             <th style={styles.th}>Tergovchi</th>
@@ -543,7 +569,7 @@ const ItemsPage = () => {
                         <tbody>
                         {items.length === 0 ? (
                             <tr>
-                                <td colSpan="6" style={{ ...styles.td, textAlign: 'center', padding: '48px', color: '#6B7280' }}>
+                                <td colSpan="7" style={{ ...styles.td, textAlign: 'center', padding: '48px', color: '#6B7280' }}>
                                     Hech qanday ma'lumot topilmadi
                                 </td>
                             </tr>
@@ -554,10 +580,23 @@ const ItemsPage = () => {
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F9FAFB'}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                                 >
-                                    <td style={{ ...styles.td, fontWeight: '500' }}>
-                                        {item.name}
+                                    <td style={styles.td}>
+                                        <div style={{ fontWeight: '600', color: '#6366F1' }}>
+                                            {item.caseNumber}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+                                            {item.caseName}
+                                        </div>
                                     </td>
-                                    <td style={styles.td}>{item.type}</td>
+                                    <td style={{ ...styles.td, fontWeight: '500' }}>
+                                        <div>{item.name}</div>
+                                        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+                                            {item.type} • {item.seizureProtocol}
+                                        </div>
+                                    </td>
+                                    <td style={styles.td}>
+                                        <span style={{ fontWeight: '600' }}>{item.quantity}</span> {item.unit}
+                                    </td>
                                     <td style={styles.td}>
                                         <StatusBadge status={item.status} />
                                     </td>
@@ -691,6 +730,31 @@ const ItemsPage = () => {
                             >
                                 <X size={24} color="#6B7280" />
                             </button>
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#374151',
+                                marginBottom: '8px',
+                            }}>
+                                Ish yuritish raqami
+                            </label>
+                            <input
+                                type="text"
+                                value={filters.caseNumber}
+                                onChange={(e) => setFilters({ ...filters, caseNumber: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 16px',
+                                    border: '1px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                }}
+                                placeholder="Masalan: JY-2025/123"
+                            />
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
