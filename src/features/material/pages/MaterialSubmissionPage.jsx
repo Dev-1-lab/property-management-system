@@ -165,7 +165,8 @@ const MaterialSubmissionPage = () => {
 
             {/* Info Box */}
             <div style={styles.infoBox}>
-                <p style={styles.infoTitle}>ℹ️ Muhim ma'lumot:</p>
+                <p style={styles.infoTitle}>📋 Jarayon tartibi:
+                </p>
                 <p style={styles.infoText}>
                     Materialni sudga topshirishdan oldin quyidagilarni tekshiring:<br/>
                     • Ekspertiza natijalari to'liq kiritilgan<br/>

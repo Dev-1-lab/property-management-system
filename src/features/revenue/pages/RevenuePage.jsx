@@ -40,13 +40,23 @@ const mockItems = [
             result: 'DAVLAT_DAROMADIGA',
         },
         revenue: {
-            amount: '8,500,000',
+            totalAmount: '8,500,000',
+            localBudgetAmount: '8,500,000',
+            currency: 'SOʻM',
             date: '2025-11-15',
             account: 'Davlat byudjeti',
             reference: 'TRX-2025-001',
             notes: 'To\'liq qiymat davlat byudjetiga o\'tkazildi',
         },
     },
+];
+
+// Pul birliklari ro'yxati
+const CURRENCIES = [
+    { value: 'SOʻM', label: 'SOʻM' },
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'RUB', label: 'RUB' },
 ];
 
 const RevenuePage = () => {
@@ -58,7 +68,9 @@ const RevenuePage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [revenueForm, setRevenueForm] = useState({
-        amount: '',
+        totalAmount: '',
+        localBudgetAmount: '',
+        currency: 'SOʻM',
         date: new Date().toISOString().split('T')[0],
         account: 'Davlat byudjeti',
         reference: '',
@@ -94,10 +106,20 @@ const RevenuePage = () => {
     const handleAddRevenue = (item) => {
         setSelectedItem(item);
         if (item.revenue) {
-            setRevenueForm({ ...item.revenue });
+            setRevenueForm({
+                totalAmount: item.revenue.totalAmount || '',
+                localBudgetAmount: item.revenue.localBudgetAmount || '',
+                currency: item.revenue.currency || 'SOʻM',
+                date: item.revenue.date || new Date().toISOString().split('T')[0],
+                account: item.revenue.account || 'Davlat byudjeti',
+                reference: item.revenue.reference || '',
+                notes: item.revenue.notes || '',
+            });
         } else {
             setRevenueForm({
-                amount: item.expertise?.estimatedValue || '',
+                totalAmount: item.expertise?.estimatedValue || '',
+                localBudgetAmount: item.expertise?.estimatedValue || '',
+                currency: 'SOʻM',
                 date: new Date().toISOString().split('T')[0],
                 account: 'Davlat byudjeti',
                 reference: '',
@@ -108,6 +130,12 @@ const RevenuePage = () => {
     };
 
     const handleSave = async () => {
+        // Validatsiya
+        if (!revenueForm.totalAmount || !revenueForm.localBudgetAmount || !revenueForm.date) {
+            showError('Barcha majburiy maydonlarni to\'ldiring!');
+            return;
+        }
+
         console.log('Saving revenue for item:', selectedItem.id, revenueForm);
 
         const updatedItems = allItems.map(item => {
@@ -132,9 +160,23 @@ const RevenuePage = () => {
         showSuccess('Tushgan mablag\' muvaffaqiyatli saqlandi');
     };
 
+    // Jami tushgan mablag'ni hisoblash
     const totalRevenue = allItems
         .filter(i => i.revenue)
-        .reduce((sum, i) => sum + parseFloat(i.revenue.amount.replace(/,/g, '')), 0);
+        .reduce((sum, i) => sum + parseFloat(i.revenue.totalAmount.replace(/,/g, '')), 0);
+
+    // Mahalliy byudjetga tushgan mablag'ni hisoblash
+    const totalLocalBudget = allItems
+        .filter(i => i.revenue)
+        .reduce((sum, i) => sum + parseFloat(i.revenue.localBudgetAmount.replace(/,/g, '')), 0);
+
+    // Format qiymatni ko'rsatish uchun funksiya
+    const formatRevenueValue = (item, type = 'total') => {
+        if (!item.revenue) return null;
+
+        const amount = type === 'local' ? item.revenue.localBudgetAmount : item.revenue.totalAmount;
+        return `${amount} ${item.revenue.currency}`;
+    };
 
     const styles = {
         container: { padding: '0' },
@@ -158,9 +200,14 @@ const RevenuePage = () => {
         formGroup: { marginBottom: '16px' },
         label: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' },
         input: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px' },
+        select: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' },
         textarea: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', minHeight: '80px', resize: 'vertical' },
         buttonGroup: { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' },
         grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
+        grid3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' },
+        amountContainer: { display: 'flex', gap: '12px' },
+        amountInput: { flex: '2' },
+        currencySelect: { flex: '1' },
     };
 
     return (
@@ -178,6 +225,12 @@ const RevenuePage = () => {
                     <p style={styles.statLabel}>Jami tushgan mablag'</p>
                     <p style={styles.statValue}>
                         {totalRevenue.toLocaleString()} so'm
+                    </p>
+                </div>
+                <div style={styles.statCard}>
+                    <p style={styles.statLabel}>Mahalliy byudjetga</p>
+                    <p style={{ ...styles.statValue, color: '#3B82F6' }}>
+                        {totalLocalBudget.toLocaleString()} so'm
                     </p>
                 </div>
                 <div style={styles.statCard}>
@@ -206,14 +259,16 @@ const RevenuePage = () => {
                             <th style={styles.th}>Mol-mulk</th>
                             <th style={styles.th}>Holat</th>
                             <th style={styles.th}>Baholangan qiymat</th>
-                            <th style={styles.th}>Tushgan mablag'</th>
+                            <th style={styles.th}>Hammasi</th>
+                            <th style={styles.th}>Mahalliy byudjetga</th>
+                            <th style={styles.th}>Valyuta</th>
                             <th style={styles.th}>Amallar</th>
                         </tr>
                         </thead>
                         <tbody>
                         {items.length === 0 ? (
                             <tr>
-                                <td colSpan="5" style={{ ...styles.td, textAlign: 'center', padding: '48px', color: '#6B7280' }}>
+                                <td colSpan="7" style={{ ...styles.td, textAlign: 'center', padding: '48px', color: '#6B7280' }}>
                                     Mablag' kiritish uchun mol-mulk yo'q
                                 </td>
                             </tr>
@@ -238,7 +293,7 @@ const RevenuePage = () => {
                                         {item.revenue ? (
                                             <div>
                                                 <div style={{ fontSize: '14px', fontWeight: '600', color: '#059669' }}>
-                                                    {item.revenue.amount} so'm
+                                                    {formatRevenueValue(item, 'total')}
                                                 </div>
                                                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
                                                     <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
@@ -247,6 +302,32 @@ const RevenuePage = () => {
                                             </div>
                                         ) : (
                                             <div style={{ fontSize: '12px', color: '#EF4444' }}>Kiritilmagan</div>
+                                        )}
+                                    </td>
+                                    <td style={styles.td}>
+                                        {item.revenue ? (
+                                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#3B82F6' }}>
+                                                {formatRevenueValue(item, 'local')}
+                                            </div>
+                                        ) : (
+                                            <div style={{ fontSize: '12px', color: '#9CA3AF' }}>-</div>
+                                        )}
+                                    </td>
+                                    <td style={styles.td}>
+                                        {item.revenue ? (
+                                            <div style={{
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                color: '#6B7280',
+                                                padding: '4px 8px',
+                                                backgroundColor: '#F3F4F6',
+                                                borderRadius: '4px',
+                                                display: 'inline-block'
+                                            }}>
+                                                {item.revenue.currency}
+                                            </div>
+                                        ) : (
+                                            <div style={{ fontSize: '12px', color: '#9CA3AF' }}>-</div>
                                         )}
                                     </td>
                                     <td style={styles.td}>
@@ -297,12 +378,21 @@ const RevenuePage = () => {
                     <div style={styles.modalContent}>
                         <div style={styles.modalHeader}>
                             <h2 style={styles.modalTitle}>Tushgan mablag' ma'lumotlari</h2>
-                            <button onClick={() => setShowModal(false)} style={{ padding: '4px', cursor: 'pointer', border: 'none', background: 'none' }}>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{ padding: '4px', cursor: 'pointer', border: 'none', background: 'none' }}
+                            >
                                 <span style={{ fontSize: '24px', color: '#6B7280' }}>×</span>
                             </button>
                         </div>
 
-                        <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#ECFDF5', borderRadius: '8px', border: '1px solid #A7F3D0' }}>
+                        <div style={{
+                            marginBottom: '24px',
+                            padding: '16px',
+                            backgroundColor: '#ECFDF5',
+                            borderRadius: '8px',
+                            border: '1px solid #A7F3D0'
+                        }}>
                             <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', color: '#065F46' }}>
                                 {selectedItem.name}
                             </h3>
@@ -314,23 +404,51 @@ const RevenuePage = () => {
 
                         <div style={styles.grid2}>
                             <div style={styles.formGroup}>
-                                <label style={styles.label}>Tushgan summa (so'm) *</label>
-                                <input
-                                    type="text"
-                                    value={revenueForm.amount}
-                                    onChange={(e) => setRevenueForm({ ...revenueForm, amount: e.target.value })}
-                                    style={styles.input}
-                                    placeholder="Masalan: 8,500,000"
-                                />
-                            </div>
-
-                            <div style={styles.formGroup}>
                                 <label style={styles.label}>Tushgan sana *</label>
                                 <input
                                     type="date"
                                     value={revenueForm.date}
                                     onChange={(e) => setRevenueForm({ ...revenueForm, date: e.target.value })}
                                     style={styles.input}
+                                />
+                            </div>
+
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Valyuta *</label>
+                                <select
+                                    value={revenueForm.currency}
+                                    onChange={(e) => setRevenueForm({ ...revenueForm, currency: e.target.value })}
+                                    style={styles.select}
+                                >
+                                    {CURRENCIES.map(currency => (
+                                        <option key={currency.value} value={currency.value}>
+                                            {currency.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style={styles.grid2}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Hammasi *</label>
+                                <input
+                                    type="text"
+                                    value={revenueForm.totalAmount}
+                                    onChange={(e) => setRevenueForm({ ...revenueForm, totalAmount: e.target.value })}
+                                    style={styles.input}
+                                    placeholder="Masalan: 8,500,000"
+                                />
+                            </div>
+
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Mahalliy byudjetga *</label>
+                                <input
+                                    type="text"
+                                    value={revenueForm.localBudgetAmount}
+                                    onChange={(e) => setRevenueForm({ ...revenueForm, localBudgetAmount: e.target.value })}
+                                    style={styles.input}
+                                    placeholder="Masalan: 8,500,000"
                                 />
                             </div>
                         </div>

@@ -36,10 +36,21 @@ const mockItems = [
             date: '2025-11-14',
             organization: 'Markaziy ekspertiza bo\'limi',
             result: 'Yuqori sifatli, ishlaydigan holat',
-            estimatedValue: '8,500,000',
+            amount: '8,500,000',
+            currency: 'SOʻM',
             documents: ['ekspertiza-akt.pdf'],
         },
     },
+];
+
+// Pul birliklari ro'yxati
+const CURRENCIES = [
+    { value: 'SOʻM', label: 'SOʻM' },
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'RUB', label: 'RUB' },
+    { value: 'GBP', label: 'GBP' },
+    { value: 'KZT', label: 'KZT' },
 ];
 
 const ExpertisePage = () => {
@@ -54,7 +65,8 @@ const ExpertisePage = () => {
         date: new Date().toISOString().split('T')[0],
         organization: '',
         result: '',
-        estimatedValue: '',
+        amount: '',
+        currency: 'SOʻM',
         notes: '',
     });
     const { user } = useAuth();
@@ -91,7 +103,8 @@ const ExpertisePage = () => {
                 date: item.expertise.date,
                 organization: item.expertise.organization,
                 result: item.expertise.result,
-                estimatedValue: item.expertise.estimatedValue,
+                amount: item.expertise.amount || '',
+                currency: item.expertise.currency || 'SOʻM',
                 notes: item.expertise.notes || '',
             });
         } else {
@@ -99,7 +112,8 @@ const ExpertisePage = () => {
                 date: new Date().toISOString().split('T')[0],
                 organization: '',
                 result: '',
-                estimatedValue: '',
+                amount: '',
+                currency: 'SOʻM',
                 notes: '',
             });
         }
@@ -107,6 +121,12 @@ const ExpertisePage = () => {
     };
 
     const handleSave = async () => {
+        // Validatsiya
+        if (!expertiseForm.amount || !expertiseForm.organization || !expertiseForm.result) {
+            showError('Barcha majburiy maydonlarni to\'ldiring!');
+            return;
+        }
+
         console.log('Saving expertise for item:', selectedItem.id, expertiseForm);
 
         // Update item status
@@ -115,7 +135,11 @@ const ExpertisePage = () => {
                 return {
                     ...item,
                     status: 'EKSPERTIZA_KIRITILGAN',
-                    expertise: { ...expertiseForm },
+                    expertise: {
+                        ...expertiseForm,
+                        // Eski format bilan ham moslik uchun
+                        estimatedValue: `${expertiseForm.amount} ${expertiseForm.currency}`
+                    },
                 };
             }
             return item;
@@ -159,6 +183,18 @@ const ExpertisePage = () => {
         showSuccess('Mol-mulk saqlash joyiga yuborildi');
     };
 
+    // Format qiymatni ko'rsatish uchun funksiya
+    const formatEstimatedValue = (item) => {
+        if (!item.expertise) return null;
+
+        if (item.expertise.amount && item.expertise.currency) {
+            return `${item.expertise.amount} ${item.expertise.currency}`;
+        }
+
+        // Eski format bilan moslik
+        return item.expertise.estimatedValue || '-';
+    };
+
     const styles = {
         container: { padding: '0' },
         header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' },
@@ -177,11 +213,15 @@ const ExpertisePage = () => {
         formGroup: { marginBottom: '16px' },
         label: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' },
         input: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px' },
+        select: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' },
         textarea: { width: '100%', padding: '10px 16px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', minHeight: '100px', resize: 'vertical' },
         buttonGroup: { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' },
         infoBox: { padding: '16px', backgroundColor: '#EEF2FF', borderRadius: '8px', marginBottom: '16px', border: '1px solid #C7D2FE' },
         infoTitle: { fontSize: '14px', fontWeight: '600', color: '#4338CA', marginBottom: '8px' },
         infoText: { fontSize: '13px', color: '#4338CA', lineHeight: '1.5' },
+        amountContainer: { display: 'flex', gap: '12px' },
+        amountInput: { flex: '2' },
+        currencySelect: { flex: '1' },
     };
 
     return (
@@ -254,7 +294,7 @@ const ExpertisePage = () => {
                                     <td style={styles.td}>
                                         {item.expertise ? (
                                             <div style={{ fontWeight: '600', color: '#059669' }}>
-                                                {item.expertise.estimatedValue} so'm
+                                                {formatEstimatedValue(item)}
                                             </div>
                                         ) : (
                                             <div style={{ color: '#9CA3AF' }}>-</div>
@@ -354,14 +394,31 @@ const ExpertisePage = () => {
                         </div>
 
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Baholangan qiymat (so'm) *</label>
-                            <input
-                                type="text"
-                                value={expertiseForm.estimatedValue}
-                                onChange={(e) => setExpertiseForm({ ...expertiseForm, estimatedValue: e.target.value })}
-                                style={styles.input}
-                                placeholder="Masalan: 8,500,000"
-                            />
+                            <label style={styles.label}>Baholangan qiymat *</label>
+                            <div style={styles.amountContainer}>
+                                <div style={styles.amountInput}>
+                                    <input
+                                        type="text"
+                                        value={expertiseForm.amount}
+                                        onChange={(e) => setExpertiseForm({ ...expertiseForm, amount: e.target.value })}
+                                        style={styles.input}
+                                        placeholder="Miqdor, masalan: 8,500,000"
+                                    />
+                                </div>
+                                <div style={styles.currencySelect}>
+                                    <select
+                                        value={expertiseForm.currency}
+                                        onChange={(e) => setExpertiseForm({ ...expertiseForm, currency: e.target.value })}
+                                        style={styles.select}
+                                    >
+                                        {CURRENCIES.map(currency => (
+                                            <option key={currency.value} value={currency.value}>
+                                                {currency.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div style={styles.formGroup}>
