@@ -47,6 +47,8 @@ const StoragePage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmNote, setConfirmNote] = useState('');
     const [confirmFile, setConfirmFile] = useState(null);
+    const [confirmDocDate, setConfirmDocDate] = useState(new Date().toISOString().split('T')[0]);
+    const [confirmDocNumber, setConfirmDocNumber] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const { user } = useAuth();
@@ -78,12 +80,23 @@ const StoragePage = () => {
 
     const handleConfirm = (item) => {
         setSelectedItem(item);
+        setConfirmDocDate(new Date().toISOString().split('T')[0]);
+        setConfirmDocNumber('');
+        setConfirmNote('');
+        setConfirmFile(null);
         setShowConfirmModal(true);
     };
 
     const handleSaveConfirmation = async () => {
         try {
+            if (!confirmDocDate || !confirmDocNumber) {
+                showError('Hujjat sanasi va raqamini kiriting!');
+                return;
+            }
+
             console.log('Confirming item:', selectedItem.id, {
+                docDate: confirmDocDate,
+                docNumber: confirmDocNumber,
                 note: confirmNote,
                 file: confirmFile,
             });
@@ -101,6 +114,8 @@ const StoragePage = () => {
             setSelectedItem(null);
             setConfirmNote('');
             setConfirmFile(null);
+            setConfirmDocDate(new Date().toISOString().split('T')[0]);
+            setConfirmDocNumber('');
 
             showSuccess('Mol-mulk muvaffaqiyatli tasdiqlandi');
         } catch (error) {
@@ -271,6 +286,11 @@ const StoragePage = () => {
             gap: '12px',
             marginTop: '24px',
         },
+        grid2: {
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px',
+        },
     };
 
     return (
@@ -423,6 +443,29 @@ const StoragePage = () => {
                             </p>
                         </div>
 
+                        {/* Hujjat ma'lumotlari */}
+                        <div style={styles.grid2}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Hujjat sanasi *</label>
+                                <input
+                                    type="date"
+                                    value={confirmDocDate}
+                                    onChange={(e) => setConfirmDocDate(e.target.value)}
+                                    style={styles.input}
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Hujjat raqami *</label>
+                                <input
+                                    type="text"
+                                    value={confirmDocNumber}
+                                    onChange={(e) => setConfirmDocNumber(e.target.value)}
+                                    style={styles.input}
+                                    placeholder="Masalan: T-2025-001"
+                                />
+                            </div>
+                        </div>
+
                         <div style={styles.formGroup}>
                             <label style={styles.label}>Eslatma (ixtiyoriy)</label>
                             <textarea
@@ -463,9 +506,23 @@ const StoragePage = () => {
                             </button>
                             <button
                                 onClick={handleSaveConfirmation}
-                                style={{ ...styles.button, ...styles.confirmButton }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#059669'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = '#10B981'}
+                                style={{
+                                    ...styles.button,
+                                    ...styles.confirmButton,
+                                    opacity: (!confirmDocDate || !confirmDocNumber) ? 0.6 : 1,
+                                    cursor: (!confirmDocDate || !confirmDocNumber) ? 'not-allowed' : 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (confirmDocDate && confirmDocNumber) {
+                                        e.target.style.backgroundColor = '#059669';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (confirmDocDate && confirmDocNumber) {
+                                        e.target.style.backgroundColor = '#10B981';
+                                    }
+                                }}
+                                disabled={!confirmDocDate || !confirmDocNumber}
                             >
                                 Tasdiqlash
                             </button>
