@@ -228,7 +228,7 @@ const ExpertisePage = () => {
         <div style={styles.container}>
             <div style={styles.header}>
                 <div>
-                    <h1 style={styles.title}>Ekspertiza natijalari</h1>
+                    <h1 style={styles.title}>Ekspertiza va baholash natijalari</h1>
                     <p style={styles.subtitle}>Mol-mulk ekspertiza natijalarini kiriting va saqlash joyiga yuboring</p>
                 </div>
             </div>
