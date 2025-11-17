@@ -192,14 +192,14 @@ const mockItems = [
             dalolatnomaSana: "2025-03-11",
             molMulkNomi: "Ofis kreslosi",
             oichovBirligi: "dona",
-            soni: 1
+            soni: 5
         }
     }
 ];
 
 const ItemsPage = () => {
     const [items, setItems] = useState([]);
-    const [allItems, setAllItems] = useState([]); // Barcha itemlar
+    const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -283,7 +283,6 @@ const ItemsPage = () => {
     };
 
     const handleEdit = (item) => {
-        // Check if item can be edited
         if (item.status === 'TASDIQLANGAN' || item.status === 'TUSHGAN_MABLAG') {
             showWarning('Bu mol-mulkni tahrirlash mumkin emas. Tasdiqlovchi tasdiqlagan yoki jarayon yakunlangan.', 4000);
             return;
@@ -336,7 +335,7 @@ const ItemsPage = () => {
 
     const handleApplyFilters = () => {
         console.log('Applying filters:', filters);
-        setCurrentPage(1); // Reset to first page
+        setCurrentPage(1);
         setShowFilterModal(false);
         showInfo('Filtrlar qo\'llandi');
         loadItems();
@@ -559,7 +558,7 @@ const ItemsPage = () => {
                         <tr>
                             <th style={styles.th}>Ish yuritish raqami</th>
                             <th style={styles.th}>Nomi</th>
-                            <th style={styles.th}>Soni</th>
+                            <th style={styles.th}>Miqdori</th>
                             <th style={styles.th}>Holati</th>
                             <th style={styles.th}>Sana</th>
                             <th style={styles.th}>Tergovchi</th>
@@ -730,31 +729,6 @@ const ItemsPage = () => {
                             >
                                 <X size={24} color="#6B7280" />
                             </button>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{
-                                display: 'block',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                color: '#374151',
-                                marginBottom: '8px',
-                            }}>
-                                Ish yuritish raqami
-                            </label>
-                            <input
-                                type="text"
-                                value={filters.caseNumber}
-                                onChange={(e) => setFilters({ ...filters, caseNumber: e.target.value })}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 16px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                }}
-                                placeholder="Masalan: JY-2025/123"
-                            />
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>

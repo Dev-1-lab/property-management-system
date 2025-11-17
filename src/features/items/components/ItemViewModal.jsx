@@ -203,7 +203,7 @@ const ItemViewModal = ({ item, onClose }) => {
                                 <div style={styles.value}>{item.type}</div>
                             </div>
                             <div style={styles.field}>
-                                <div style={styles.label}>Soni</div>
+                                <div style={styles.label}>Miqdori</div>
                                 <div style={styles.value}>{item.quantity} {item.unit}</div>
                             </div>
                             <div style={styles.field}>
