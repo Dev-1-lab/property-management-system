@@ -1,6 +1,6 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../features/auth/context/AuthContext';
+import {Routes, Route, Navigate} from 'react-router-dom';
+import {useAuth} from '../features/auth/context/AuthContext';
 import LoginPage from '../features/auth/pages/LoginPage';
 import MainLayout from '../components/layout/MainLayout';
 import DashboardPage from '../pages/DashboardPage';
@@ -11,12 +11,14 @@ import DecisionPage from '../features/decision/pages/DecisionPage';
 import RevenuePage from '../features/revenue/pages/RevenuePage';
 import ReportsPage from '../pages/ReportsPage';
 import AdminPage from '../features/admin/pages/AdminPage';
-import { USER_ROLES } from '../utils/constants';
+import {USER_ROLES} from '../utils/constants';
 import MaterialSubmissionPage from "../features/material/pages/MaterialSubmissionPage.jsx";
+import NotFoundPage from "../pages/NotFoundPage.jsx";
+import ItemDetailPage from "../features/items/pages/ItemDetailsPage.jsx";
 
 // Protected Route wrapper
-const ProtectedRoute = ({ children, allowedRoles }) => {
-    const { user, loading } = useAuth();
+const ProtectedRoute = ({children, allowedRoles}) => {
+    const {user, loading} = useAuth();
 
     if (loading) {
         return (
@@ -27,11 +29,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }
 
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" replace/>;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to="/dashboard" replace/>;
     }
 
     return children;
@@ -41,28 +43,28 @@ const AppRoutes = () => {
     return (
         <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage/>}/>
 
             {/* Protected Routes */}
             <Route
                 path="/"
                 element={
                     <ProtectedRoute>
-                        <MainLayout />
+                        <MainLayout/>
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route index element={<Navigate to="/dashboard" replace/>}/>
 
-                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="dashboard" element={<DashboardPage/>}/>
 
-                <Route path="items" element={<ItemsPage />} />
+                <Route path="items" element={<ItemsPage/>}/>
 
                 <Route
                     path="expertise"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
-                            <ExpertisePage />
+                            <ExpertisePage/>
                         </ProtectedRoute>
                     }
                 />
@@ -71,7 +73,7 @@ const AppRoutes = () => {
                     path="storage"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.TASDIQLOVCHI, USER_ROLES.ADMINISTRATOR]}>
-                            <StoragePage />
+                            <StoragePage/>
                         </ProtectedRoute>
                     }
                 />
@@ -80,16 +82,22 @@ const AppRoutes = () => {
                     path="decision"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
-                            <DecisionPage />
+                            <DecisionPage/>
                         </ProtectedRoute>
                     }
                 />
-
+                <Route
+                    path="items/:id"
+                    element={
+                        <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
+                            <ItemDetailPage/>
+                        </ProtectedRoute>
+                    }/>
                 <Route
                     path="revenue"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR]}>
-                            <RevenuePage />
+                            <RevenuePage/>
                         </ProtectedRoute>
                     }
                 />
@@ -98,15 +106,15 @@ const AppRoutes = () => {
                     path="reports"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.MONITORING, USER_ROLES.ADMINISTRATOR]}>
-                            <ReportsPage />
+                            <ReportsPage/>
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="material"
                     element={
-                        <ProtectedRoute allowedRoles={[USER_ROLES.ADMINISTRATOR,USER_ROLES.TERGOVCHI]}>
-                            <MaterialSubmissionPage />
+                        <ProtectedRoute allowedRoles={[USER_ROLES.ADMINISTRATOR, USER_ROLES.TERGOVCHI]}>
+                            <MaterialSubmissionPage/>
                         </ProtectedRoute>
                     }
                 />
@@ -116,7 +124,7 @@ const AppRoutes = () => {
                     path="users"
                     element={
                         <ProtectedRoute allowedRoles={[USER_ROLES.ADMINISTRATOR]}>
-                            <AdminPage />
+                            <AdminPage/>
                         </ProtectedRoute>
                     }
                 />
@@ -125,7 +133,7 @@ const AppRoutes = () => {
             </Route>
 
             {/* 404 Not Found */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<NotFoundPage/>}/>
         </Routes>
     );
 };

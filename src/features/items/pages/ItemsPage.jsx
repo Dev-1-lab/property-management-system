@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Download, Eye, Edit, Check, X } from 'lucide-react';
+import { Plus, Search, Filter, Download, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { USER_ROLES } from '../../../utils/constants';
 import StatusBadge from '../components/StatusBadge';
 import ItemModal from '../components/ItemModal';
-import ItemViewModal from '../components/ItemViewModal';
 import Pagination from '../../../components/ui/Pagination';
 import { useToast } from '../../../components/ui/Toast';
+import { useNavigate } from 'react-router-dom';
 
-// Full detailed mock data (compatible with ViewItemModal)
+// Mock data
 const mockItems = [
     {
         id: 1,
@@ -204,7 +204,6 @@ const ItemsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [viewItem, setViewItem] = useState(null);
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -218,8 +217,8 @@ const ItemsPage = () => {
 
     const { user } = useAuth();
     const { showSuccess, showError, showWarning, showInfo } = useToast();
+    const navigate = useNavigate();
     const canEdit = [USER_ROLES.TERGOVCHI, USER_ROLES.ADMINISTRATOR].includes(user?.role);
-    const canConfirm = user?.role === USER_ROLES.TASDIQLOVCHI;
 
     useEffect(() => {
         loadItems();
@@ -230,7 +229,6 @@ const ItemsPage = () => {
             setLoading(true);
             let filteredItems = [...mockItems];
 
-            // Apply search
             if (searchTerm) {
                 filteredItems = filteredItems.filter((item) =>
                     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -242,7 +240,6 @@ const ItemsPage = () => {
                 );
             }
 
-            // Apply filters
             if (filters.status) {
                 filteredItems = filteredItems.filter((item) => item.status === filters.status);
             }
@@ -263,7 +260,6 @@ const ItemsPage = () => {
 
             setAllItems(filteredItems);
 
-            // Pagination
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const paginatedItems = filteredItems.slice(startIndex, endIndex);
@@ -282,28 +278,20 @@ const ItemsPage = () => {
         setShowModal(true);
     };
 
-    const handleEdit = (item) => {
-        if (item.status === 'TASDIQLANGAN' || item.status === 'TUSHGAN_MABLAG') {
-            showWarning('Bu mol-mulkni tahrirlash mumkin emas. Tasdiqlovchi tasdiqlagan yoki jarayon yakunlangan.', 4000);
-            return;
-        }
-        setSelectedItem(item);
-        setShowModal(true);
+    const handleRowClick = (item) => {
+        navigate(`/items/${item.id}`);
     };
 
     const handleSave = async (data) => {
         try {
             if (selectedItem) {
-                console.log('Updating item:', selectedItem.id, data);
                 showSuccess('Mol-mulk muvaffaqiyatli yangilandi');
             } else {
-                console.log('Creating new item:', data);
                 showSuccess('Yangi mol-mulk qo\'shildi');
             }
             setShowModal(false);
             loadItems();
         } catch (error) {
-            console.error('Failed to save item:', error);
             showError('Saqlashda xatolik yuz berdi');
         }
     };
@@ -328,52 +316,14 @@ const ItemsPage = () => {
 
             showSuccess('Ma\'lumotlar muvaffaqiyatli eksport qilindi');
         } catch (error) {
-            console.error('Failed to export:', error);
             showError('Eksport qilishda xatolik yuz berdi');
         }
     };
 
-    const handleApplyFilters = () => {
-        console.log('Applying filters:', filters);
-        setCurrentPage(1);
-        setShowFilterModal(false);
-        showInfo('Filtrlar qo\'llandi');
-        loadItems();
-    };
-
-    const handleResetFilters = () => {
-        console.log('Resetting filters');
-        setFilters({
-            status: '',
-            type: '',
-            caseNumber: '',
-            dateFrom: '',
-            dateTo: '',
-        });
-        setCurrentPage(1);
-        showInfo('Filtrlar tozalandi');
-    };
-
-    const handleOpenFilterModal = () => {
-        console.log('Opening filter modal');
-        setShowFilterModal(true);
-    };
-
     const styles = {
-        container: {
-            padding: '0',
-        },
-        header: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '24px',
-        },
-        title: {
-            fontSize: '30px',
-            fontWeight: 'bold',
-            color: '#1F2937',
-        },
+        container: { padding: '0' },
+        header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' },
+        title: { fontSize: '30px', fontWeight: 'bold', color: '#1F2937' },
         button: {
             display: 'flex',
             alignItems: 'center',
@@ -395,15 +345,8 @@ const ItemsPage = () => {
             padding: '24px',
             marginBottom: '24px',
         },
-        filterRow: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-        },
-        searchContainer: {
-            flex: 1,
-            position: 'relative',
-        },
+        filterRow: { display: 'flex', alignItems: 'center', gap: '16px' },
+        searchContainer: { flex: 1, position: 'relative' },
         searchIcon: {
             position: 'absolute',
             left: '12px',
@@ -440,14 +383,8 @@ const ItemsPage = () => {
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
             overflow: 'hidden',
         },
-        table: {
-            width: '100%',
-            borderCollapse: 'collapse',
-        },
-        thead: {
-            backgroundColor: '#F3F4F6',
-            borderBottom: '2px solid #E5E7EB',
-        },
+        table: { width: '100%', borderCollapse: 'collapse' },
+        thead: { backgroundColor: '#F3F4F6', borderBottom: '2px solid #E5E7EB' },
         th: {
             padding: '12px 24px',
             textAlign: 'left',
@@ -462,19 +399,11 @@ const ItemsPage = () => {
             color: '#1F2937',
             borderBottom: '1px solid #F3F4F6',
         },
-        actionButton: {
-            padding: '4px',
-            border: 'none',
-            background: 'none',
+        clickableRow: {
             cursor: 'pointer',
-            borderRadius: '4px',
             transition: 'background-color 0.2s',
         },
-        loading: {
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '48px',
-        },
+        loading: { display: 'flex', justifyContent: 'center', padding: '48px' },
         spinner: {
             width: '32px',
             height: '32px',
@@ -487,7 +416,6 @@ const ItemsPage = () => {
 
     return (
         <div style={styles.container}>
-            {/* Header */}
             <div style={styles.header}>
                 <h1 style={styles.title}>Mol-mulk ro'yxati</h1>
                 {canEdit && (
@@ -503,7 +431,6 @@ const ItemsPage = () => {
                 )}
             </div>
 
-            {/* Filters */}
             <div style={styles.filterCard}>
                 <div style={styles.filterRow}>
                     <div style={styles.searchContainer}>
@@ -518,7 +445,7 @@ const ItemsPage = () => {
                     </div>
                     <button
                         style={styles.filterButton}
-                        onClick={handleOpenFilterModal}
+                        onClick={() => setShowFilterModal(true)}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                     >
@@ -546,7 +473,6 @@ const ItemsPage = () => {
                 </div>
             </div>
 
-            {/* Table */}
             <div style={styles.tableCard}>
                 {loading ? (
                     <div style={styles.loading}>
@@ -562,7 +488,7 @@ const ItemsPage = () => {
                             <th style={styles.th}>Holati</th>
                             <th style={styles.th}>Sana</th>
                             <th style={styles.th}>Tergovchi</th>
-                            <th style={styles.th}>Amallar</th>
+                            <th style={styles.th}></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -576,6 +502,8 @@ const ItemsPage = () => {
                             items.map((item) => (
                                 <tr
                                     key={item.id}
+                                    style={styles.clickableRow}
+                                    onClick={() => handleRowClick(item)}
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F9FAFB'}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                                 >
@@ -602,40 +530,7 @@ const ItemsPage = () => {
                                     <td style={styles.td}>{item.createdAt}</td>
                                     <td style={styles.td}>{item.investigator}</td>
                                     <td style={styles.td}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <button
-                                                onClick={() => setViewItem(item)}
-                                                style={styles.actionButton}
-                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#F3F4F6'}
-                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                                title="Ko'rish"
-                                            >
-                                                <Eye size={16} color="#6B7280" />
-                                            </button>
-
-                                            {canEdit && (
-                                                <button
-                                                    onClick={() => handleEdit(item)}
-                                                    style={styles.actionButton}
-                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#EEF2FF'}
-                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                                    title="Tahrirlash"
-                                                >
-                                                    <Edit size={16} color="#6366F1" />
-                                                </button>
-                                            )}
-
-                                            {canConfirm && item.status === 'SAQLASHGA_YUBORILGAN' && (
-                                                <button
-                                                    style={styles.actionButton}
-                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D1FAE5'}
-                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                                    title="Tasdiqlash"
-                                                >
-                                                    <Check size={16} color="#10B981" />
-                                                </button>
-                                            )}
-                                        </div>
+                                        <ChevronRight size={20} color="#9CA3AF" />
                                     </td>
                                 </tr>
                             ))
@@ -644,7 +539,6 @@ const ItemsPage = () => {
                     </table>
                 )}
 
-                {/* Pagination */}
                 {!loading && items.length > 0 && (
                     <Pagination
                         currentPage={currentPage}
@@ -660,237 +554,12 @@ const ItemsPage = () => {
                 )}
             </div>
 
-            {/* Modals */}
             {showModal && (
                 <ItemModal
                     item={selectedItem}
                     onClose={() => setShowModal(false)}
                     onSave={handleSave}
                 />
-            )}
-
-            {viewItem && (
-                <ItemViewModal
-                    item={viewItem}
-                    onClose={() => setViewItem(null)}
-                />
-            )}
-
-            {/* Filter Modal */}
-            {showFilterModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px',
-                        zIndex: 50,
-                    }}
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                            setShowFilterModal(false);
-                        }
-                    }}
-                >
-                    <div style={{
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        padding: '24px',
-                        width: '100%',
-                        maxWidth: '500px',
-                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '24px',
-                        }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1F2937' }}>
-                                Filtrlar
-                            </h2>
-                            <button
-                                onClick={() => setShowFilterModal(false)}
-                                style={{
-                                    padding: '4px',
-                                    border: 'none',
-                                    background: 'none',
-                                    cursor: 'pointer',
-                                    borderRadius: '4px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#F3F4F6'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                            >
-                                <X size={24} color="#6B7280" />
-                            </button>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{
-                                display: 'block',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                color: '#374151',
-                                marginBottom: '8px',
-                            }}>
-                                Holati
-                            </label>
-                            <select
-                                value={filters.status}
-                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 16px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    backgroundColor: 'white',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <option value="">Barchasi</option>
-                                <option value="YARATILGAN">Yaratilgan</option>
-                                <option value="EKSPERTIZA_KIRITILGAN">Ekspertiza kiritilgan</option>
-                                <option value="SAQLASHGA_YUBORILGAN">Saqlashga yuborilgan</option>
-                                <option value="TASDIQLANGAN">Tasdiqlangan</option>
-                                <option value="MATERIALNI_SUDGA_TOPSHIRILGAN">Sudga topshirilgan</option>
-                                <option value="SUD_QARORI_KIRITILGAN">Sud qarori kiritilgan</option>
-                                <option value="TUSHGAN_MABLAG">Tushgan mablag'</option>
-                            </select>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{
-                                display: 'block',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                color: '#374151',
-                                marginBottom: '8px',
-                            }}>
-                                Turi
-                            </label>
-                            <select
-                                value={filters.type}
-                                onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 16px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    backgroundColor: 'white',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <option value="">Barchasi</option>
-                                <option value="Elektronika">Elektronika</option>
-                                <option value="Mebel">Mebel</option>
-                                <option value="TRANSPORT">Transport</option>
-                                <option value="QIMMATBAHO">Qimmatbaho</option>
-                                <option value="BOSHQA">Boshqa</option>
-                            </select>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                            <div>
-                                <label style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    color: '#374151',
-                                    marginBottom: '8px',
-                                }}>
-                                    Dan
-                                </label>
-                                <input
-                                    type="date"
-                                    value={filters.dateFrom}
-                                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 16px',
-                                        border: '1px solid #D1D5DB',
-                                        borderRadius: '8px',
-                                        fontSize: '14px',
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{
-                                    display: 'block',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    color: '#374151',
-                                    marginBottom: '8px',
-                                }}>
-                                    Gacha
-                                </label>
-                                <input
-                                    type="date"
-                                    value={filters.dateTo}
-                                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 16px',
-                                        border: '1px solid #D1D5DB',
-                                        borderRadius: '8px',
-                                        fontSize: '14px',
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            gap: '12px',
-                            marginTop: '24px',
-                        }}>
-                            <button
-                                onClick={handleResetFilters}
-                                style={{
-                                    padding: '10px 16px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    backgroundColor: 'white',
-                                    color: '#374151',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#F9FAFB'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                            >
-                                Tozalash
-                            </button>
-                            <button
-                                onClick={handleApplyFilters}
-                                style={{
-                                    padding: '10px 16px',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    backgroundColor: '#6366F1',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#4F46E5'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = '#6366F1'}
-                            >
-                                Qo'llash
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
 
             <style>{`

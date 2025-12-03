@@ -3,9 +3,9 @@ import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import NotificationPanel from '../../features/notifications/components/NotificationPanel';
 
-const TopBar = ({ title }) => {
+const TopBar = ({ title, onNotificationItemClick }) => {
     const [showNotifications, setShowNotifications] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(53);
+    const [unreadCount, setUnreadCount] = useState(3);
     const { user } = useAuth();
 
     return (
@@ -35,6 +35,7 @@ const TopBar = ({ title }) => {
                         <NotificationPanel
                             onClose={() => setShowNotifications(false)}
                             onUnreadCountChange={setUnreadCount}
+                            onItemClick={onNotificationItemClick}
                         />
                     )}
                 </div>

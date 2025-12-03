@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Check, X, Upload, Eye, Clock } from 'lucide-react';
+import { Package, Check, X, Upload, Eye, Clock, Ban } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import StatusBadge from '../../items/components/StatusBadge';
 import Pagination from '../../../components/ui/Pagination';
@@ -42,10 +42,14 @@ const mockPendingItems = [
 const StoragePage = () => {
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
+    const [confirmedItems, setConfirmedItems] = useState([]);
+    const [rejectedItems, setRejectedItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showRejectModal, setShowRejectModal] = useState(false);
     const [confirmNote, setConfirmNote] = useState('');
+    const [rejectReason, setRejectReason] = useState('');
     const [confirmFile, setConfirmFile] = useState(null);
     const [confirmDocDate, setConfirmDocDate] = useState(new Date().toISOString().split('T')[0]);
     const [confirmDocNumber, setConfirmDocNumber] = useState('');
@@ -56,6 +60,8 @@ const StoragePage = () => {
 
     useEffect(() => {
         loadPendingItems();
+        loadConfirmedItems();
+        loadRejectedItems();
     }, [currentPage, itemsPerPage]);
 
     const loadPendingItems = async () => {
@@ -78,6 +84,39 @@ const StoragePage = () => {
         }
     };
 
+    const loadConfirmedItems = async () => {
+        // Mock confirmed items
+        const mockConfirmed = [
+            {
+                id: 101,
+                name: 'Televizor Samsung',
+                type: 'ELEKTRONIKA',
+                status: 'TASDIQLANGAN',
+                confirmedAt: '2025-11-14',
+                investigator: 'C.Saidov',
+                location: '1-ombor',
+            }
+        ];
+        setConfirmedItems(mockConfirmed);
+    };
+
+    const loadRejectedItems = async () => {
+        // Mock rejected items
+        const mockRejected = [
+            {
+                id: 201,
+                name: 'Telefon iPhone',
+                type: 'ELEKTRONIKA',
+                status: 'RAD_ETILGAN',
+                rejectedAt: '2025-11-13',
+                investigator: 'D.Azimov',
+                location: '2-ombor',
+                rejectReason: 'Hujjatlar to\'liq emas'
+            }
+        ];
+        setRejectedItems(mockRejected);
+    };
+
     const handleConfirm = (item) => {
         setSelectedItem(item);
         setConfirmDocDate(new Date().toISOString().split('T')[0]);
@@ -85,6 +124,12 @@ const StoragePage = () => {
         setConfirmNote('');
         setConfirmFile(null);
         setShowConfirmModal(true);
+    };
+
+    const handleReject = (item) => {
+        setSelectedItem(item);
+        setRejectReason('');
+        setShowRejectModal(true);
     };
 
     const handleSaveConfirmation = async () => {
@@ -101,9 +146,21 @@ const StoragePage = () => {
                 file: confirmFile,
             });
 
-            // Remove confirmed item from list
+            // Remove confirmed item from pending list
             const updatedItems = allItems.filter(item => item.id !== selectedItem.id);
             setAllItems(updatedItems);
+
+            // Add to confirmed items
+            const confirmedItem = {
+                ...selectedItem,
+                status: 'TASDIQLANGAN',
+                confirmedAt: new Date().toISOString().split('T')[0],
+                confirmDocDate,
+                confirmDocNumber,
+                confirmNote,
+                confirmFile
+            };
+            setConfirmedItems(prev => [...prev, confirmedItem]);
 
             // Update paginated items
             const startIndex = (currentPage - 1) * itemsPerPage;
@@ -123,6 +180,57 @@ const StoragePage = () => {
             showError('Tasdiqlashda xatolik yuz berdi');
         }
     };
+
+    const handleSaveRejection = async () => {
+        try {
+            if (!rejectReason) {
+                showError('Rad etish sababini kiriting!');
+                return;
+            }
+
+            console.log('Rejecting item:', selectedItem.id, {
+                reason: rejectReason,
+            });
+
+            // Remove rejected item from pending list
+            const updatedItems = allItems.filter(item => item.id !== selectedItem.id);
+            setAllItems(updatedItems);
+
+            // Add to rejected items
+            const rejectedItem = {
+                ...selectedItem,
+                status: 'RAD_ETILGAN',
+                rejectedAt: new Date().toISOString().split('T')[0],
+                rejectReason
+            };
+            setRejectedItems(prev => [...prev, rejectedItem]);
+
+            // Update paginated items
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            setItems(updatedItems.slice(startIndex, endIndex));
+
+            setShowRejectModal(false);
+            setSelectedItem(null);
+            setRejectReason('');
+
+            showSuccess('Mol-mulk rad etildi');
+        } catch (error) {
+            console.error('Failed to reject:', error);
+            showError('Rad etishda xatolik yuz berdi');
+        }
+    };
+
+    const getStats = () => {
+        return {
+            pending: allItems.length,
+            confirmed: confirmedItems.length,
+            rejected: rejectedItems.length,
+            total: allItems.length + confirmedItems.length + rejectedItems.length
+        };
+    };
+
+    const stats = getStats();
 
     const styles = {
         container: {
@@ -234,7 +342,7 @@ const StoragePage = () => {
             borderRadius: '12px',
             padding: '24px',
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '500px',
         },
         modalHeader: {
             display: 'flex',
@@ -270,7 +378,7 @@ const StoragePage = () => {
             border: '1px solid #D1D5DB',
             borderRadius: '8px',
             fontSize: '14px',
-            minHeight: '100px',
+            minHeight: '120px',
             resize: 'vertical',
         },
         fileUpload: {
@@ -306,7 +414,7 @@ const StoragePage = () => {
                     <div style={styles.statHeader}>
                         <div>
                             <p style={styles.statLabel}>Tasdiqlash kutilmoqda</p>
-                            <p style={styles.statValue}>{items.length}</p>
+                            <p style={styles.statValue}>{stats.pending}</p>
                         </div>
                         <div style={{ ...styles.statIcon, backgroundColor: '#FEF3C7' }}>
                             <Clock size={24} color="#F59E0B" />
@@ -317,8 +425,8 @@ const StoragePage = () => {
                 <div style={styles.statCard}>
                     <div style={styles.statHeader}>
                         <div>
-                            <p style={styles.statLabel}>Bugun tasdiqlangan</p>
-                            <p style={styles.statValue}>12</p>
+                            <p style={styles.statLabel}>Tasdiqlanganlar</p>
+                            <p style={styles.statValue}>{stats.confirmed}</p>
                         </div>
                         <div style={{ ...styles.statIcon, backgroundColor: '#D1FAE5' }}>
                             <Check size={24} color="#10B981" />
@@ -329,8 +437,20 @@ const StoragePage = () => {
                 <div style={styles.statCard}>
                     <div style={styles.statHeader}>
                         <div>
-                            <p style={styles.statLabel}>Jami saqlangan</p>
-                            <p style={styles.statValue}>156</p>
+                            <p style={styles.statLabel}>Rad etilganlar</p>
+                            <p style={styles.statValue}>{stats.rejected}</p>
+                        </div>
+                        <div style={{ ...styles.statIcon, backgroundColor: '#FEE2E2' }}>
+                            <Ban size={24} color="#EF4444" />
+                        </div>
+                    </div>
+                </div>
+
+                <div style={styles.statCard}>
+                    <div style={styles.statHeader}>
+                        <div>
+                            <p style={styles.statLabel}>Jami</p>
+                            <p style={styles.statValue}>{stats.total}</p>
                         </div>
                         <div style={{ ...styles.statIcon, backgroundColor: '#DBEAFE' }}>
                             <Package size={24} color="#3B82F6" />
@@ -394,6 +514,15 @@ const StoragePage = () => {
                                             >
                                                 <Check size={16} />
                                                 Tasdiqlash
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(item)}
+                                                style={{ ...styles.button, ...styles.rejectButton }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#DC2626'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = '#EF4444'}
+                                            >
+                                                <Ban size={16} />
+                                                Rad etish
                                             </button>
                                         </div>
                                     </td>
@@ -525,6 +654,76 @@ const StoragePage = () => {
                                 disabled={!confirmDocDate || !confirmDocNumber}
                             >
                                 Tasdiqlash
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rejection Modal - Soddalashtirilgan */}
+            {showRejectModal && selectedItem && (
+                <div style={styles.modal}>
+                    <div style={styles.modalContent}>
+                        <div style={styles.modalHeader}>
+                            <h2 style={styles.modalTitle}>Mol-mulkni rad etish</h2>
+                            <button
+                                onClick={() => setShowRejectModal(false)}
+                                style={{ padding: '4px', cursor: 'pointer', border: 'none', background: 'none' }}
+                            >
+                                <X size={24} color="#6B7280" />
+                            </button>
+                        </div>
+
+                        <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', color: '#DC2626' }}>
+                                {selectedItem.name}
+                            </h3>
+                            <p style={{ fontSize: '14px', color: '#6B7280' }}>
+                                Tergovchi: {selectedItem.investigator} • Saqlash: {selectedItem.location}
+                            </p>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Rad etish sababi *</label>
+                            <textarea
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                style={styles.textarea}
+                                placeholder="Mol-mulkni rad etish sababini batafsil yozing..."
+                                required
+                            />
+                        </div>
+
+                        <div style={styles.buttonGroup}>
+                            <button
+                                onClick={() => setShowRejectModal(false)}
+                                style={{ ...styles.button, backgroundColor: '#F3F4F6', color: '#374151' }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#E5E7EB'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#F3F4F6'}
+                            >
+                                Bekor qilish
+                            </button>
+                            <button
+                                onClick={handleSaveRejection}
+                                style={{
+                                    ...styles.button,
+                                    ...styles.rejectButton,
+                                    opacity: !rejectReason ? 0.6 : 1,
+                                    cursor: !rejectReason ? 'not-allowed' : 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (rejectReason) {
+                                        e.target.style.backgroundColor = '#DC2626';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (rejectReason) {
+                                        e.target.style.backgroundColor = '#EF4444';
+                                    }
+                                }}
+                                disabled={!rejectReason}
+                            >
+                                Rad etish
                             </button>
                         </div>
                     </div>
